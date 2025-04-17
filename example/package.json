@@ -3,15 +3,17 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "android": "react-native run-android",
-    "ios": "react-native run-ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "start": "react-native start",
     "build:android": "react-native build-android --extra-params \"--no-daemon --console=plain -PreactNativeArchitectures=arm64-v8a\"",
     "build:ios": "react-native build-ios --scheme AudioManagerExample --mode Debug --extra-params \"-sdk iphonesimulator CC=clang CPLUSPLUS=clang++ LD=clang LDPLUSPLUS=clang++ GCC_OPTIMIZATION_LEVEL=0 GCC_PRECOMPILE_PREFIX_HEADER=YES ASSETCATALOG_COMPILER_OPTIMIZATION=time DEBUG_INFORMATION_FORMAT=dwarf COMPILER_INDEX_STORE_ENABLE=NO\""
   },
   "dependencies": {
+    "expo": "^53.0.0-preview.7",
+    "expo-dev-client": "^5.0.20",
     "react": "19.0.0",
-    "react-native": "0.78.2",
+    "react-native": "0.79.0",
     "react-native-nitro-modules": "^0.25.2"
   },
   "devDependencies": {
@@ -24,7 +26,10 @@
     "@react-native/babel-preset": "0.78.2",
     "@react-native/metro-config": "0.78.2",
     "@react-native/typescript-config": "0.78.2",
-    "@types/react": "^19.0.0",
+    "@types/react": "~19.0.10",
+    "metro": "0.82.0",
+    "metro-config": "0.82.0",
+    "metro-resolver": "0.82.0",
     "react-native-builder-bob": "^0.40.6"
   },
   "engines": {

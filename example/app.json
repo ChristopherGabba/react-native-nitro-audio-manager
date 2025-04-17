@@ -1,4 +1,30 @@
 {
-  "name": "AudioManagerExample",
-  "displayName": "AudioManagerExample"
+  "expo": {
+    "name": "AudioManagerExample",
+    "slug": "audiomanagerexample",
+    "version": "1.0.0",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "bundleIdentifier": "audiomanager.example",
+      "appleTeamId": "32U9AXHQSK"
+    },
+    "android": {
+      "package": "audiomanager.example"
+    }
+  }
 }
