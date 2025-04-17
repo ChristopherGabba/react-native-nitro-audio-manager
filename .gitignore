@@ -43,7 +43,9 @@ android.iml
 
 # Cocoapods
 #
-example/ios/Pods
+# Ignore example platform builds
+/example/ios/
+/example/android/
 
 # Ruby
 example/vendor/

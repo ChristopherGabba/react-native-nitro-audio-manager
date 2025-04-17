@@ -1,7 +1,7 @@
 import { Text, View, StyleSheet } from 'react-native';
 import { multiply } from 'react-native-audio-manager';
 
-const result = multiply(3, 7);
+const result = multiply(3, 8);
 
 export default function App() {
   return (

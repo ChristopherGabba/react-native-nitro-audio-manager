@@ -35,7 +35,7 @@
   "scripts": {
     "example": "yarn workspace react-native-audio-manager-example",
     "test": "jest",
-    "typecheck": "tsc",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
     "prepare": "bob build",
