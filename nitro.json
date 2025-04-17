@@ -1,0 +1,17 @@
+{
+  "cxxNamespace": ["audiomanager"],
+  "ios": {
+    "iosModuleName": "AudioManager"
+  },
+  "android": {
+    "androidNamespace": ["audiomanager"],
+    "androidCxxLibName": "audiomanager"
+  },
+  "autolinking": {
+    "AudioManager": {
+      "swift": "AudioManager",
+      "kotlin": "AudioManager"
+    }
+  },
+  "ignorePaths": ["node_modules"]
+}
