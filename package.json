@@ -34,6 +34,8 @@
   ],
   "scripts": {
     "example": "yarn workspace react-native-audio-manager-example",
+    "example:ios": "bash -c 'yarn prepare && cd example && npx expo prebuild --clean && npx expo run:ios --device \"Christopher’s iPhone\"'",
+    "example:android": "bash -c 'yarn prepare && cd example && npx expo prebuild --clean && npx expo run:android --device'",
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",

@@ -19,6 +19,17 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "gradleWrapperVersion": "8.9",
+            "gradlePluginVersion": "8.0.0"
+          }
+        }
+      ]
+    ],
     "ios": {
       "bundleIdentifier": "audiomanager.example",
       "appleTeamId": "32U9AXHQSK"
