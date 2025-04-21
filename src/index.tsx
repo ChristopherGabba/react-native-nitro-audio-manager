@@ -22,12 +22,16 @@ export * from './types';
 
 const isIOS = Platform.OS === 'ios';
 
+// const warnOnWeb = () => {
+//   console.warn('This function is not compatibile on web');
+// };
+
 const AudioManagerHybridObject =
   NitroModules.createHybridObject<AudioManager>('AudioManager');
 
 /**
- * Returns the current systme volume.
- * @returns Minimum: 0, Maximum: 1
+ * Returns the current system volume.
+ * @returns A number between 0–1
  */
 export function getSystemVolume(): number {
   return AudioManagerHybridObject.getSystemVolume();

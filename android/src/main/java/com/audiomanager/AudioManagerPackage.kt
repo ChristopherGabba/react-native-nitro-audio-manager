@@ -1,4 +1,4 @@
-package com.audiomanager
+package com.margelo.nitro.audiomanager
 
 import com.facebook.react.TurboReactPackage
 import com.facebook.react.bridge.NativeModule

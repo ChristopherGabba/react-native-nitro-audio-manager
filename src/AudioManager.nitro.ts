@@ -8,11 +8,10 @@ import type {
 
 export interface AudioManager
   extends HybridObject<{ ios: 'swift'; android: 'kotlin' }> {
-  // Both Platforms
-  getSystemVolume(): number;
   /**
    * IOS Only
    */
+  getSystemVolume(): number;
   activate(): Promise<void>;
   deactivate(restorePreviousSessionOnDeactivation: boolean): Promise<void>;
   getOutputLatency(): number;
