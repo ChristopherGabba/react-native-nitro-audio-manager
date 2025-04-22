@@ -1,61 +1,37 @@
 package com.margelo.nitro.audiomanager
 
+import android.os.Build
 import com.facebook.proguard.annotations.DoNotStrip
 import android.media.AudioManager as SysAudioManager
-import com.facebook.react.bridge.ReactApplicationContext
+import com.margelo.nitro.NitroModules
 import android.content.Context
 import com.margelo.nitro.core.*
 import android.util.Log
 
 @DoNotStrip
-class AudioManager(reactContext: ReactApplicationContext) : HybridAudioManagerSpec() {
+class AudioManager : HybridAudioManagerSpec() {
 
-    private val ctx: Context = reactContext
-    private var am: SysAudioManager? = null
+  companion object {
+    private const val TAG = "AudioManager"
+  }
 
-    private val logTag = "AudioManagerModule"
+  private lateinit var am: SysAudioManager
 
-    init {
-        Log.d(logTag, "Initializing AudioManager Module...") // Log initialization start
-        try {
-            am = ctx.getSystemService(Context.AUDIO_SERVICE) as? SysAudioManager
-            if (am == null) {
-                Log.e(logTag, "AudioManager (am) failed to initialize - getSystemService returned null or context invalid?")
-            } else {
-                Log.d(logTag, "AudioManager (am) initialized successfully.")
-            }
-        } catch (e: Exception) {
-            Log.e(logTag, "Exception during AudioManager initialization", e)
-        }
+  init {
+    NitroModules.applicationContext?.let { ctx ->
+      am = ctx.getSystemService(Context.AUDIO_SERVICE) as SysAudioManager
+      Log.d(TAG, "AudioManager initialized via init{}")
+    } ?: run {
+      Log.e(TAG, "AudioManager: applicationContext was null")
     }
+  }
 
-    override fun getSystemVolume(): Double {
-        Log.d(logTag, "getSystemVolume called.") // Log when the method is entered
+  override fun getSystemVolume(): Double {
+    val current = am.getStreamVolume(SysAudioManager.STREAM_MUSIC)
+    val max     = am.getStreamMaxVolume(SysAudioManager.STREAM_MUSIC)
+    return if (max > 0) current.toDouble() / max.toDouble() else 0.0
+  }
 
-        // *** CRITICAL NULL CHECK ***
-        if (am == null) {
-            Log.e(logTag, "getSystemVolume called but AudioManager (am) is null!")
-            // Throw a meaningful exception back to JS
-            throw IllegalStateException("AudioManager native instance is not initialized.")
-            // Alternatively, return an error value like -1.0, but throwing is often clearer
-            // return -1.0
-        }
-
-        try {
-            // Now we know 'am' is not null, but use safe call ?. or !!. assertion
-            // Using !!. means "I'm sure it's not null here", will crash if it somehow is.
-            val current = am!!.getStreamVolume(SysAudioManager.STREAM_MUSIC)
-            val max = am!!.getStreamMaxVolume(SysAudioManager.STREAM_MUSIC)
-
-            Log.d(logTag, "Current Volume: $current, Max Volume: $max") // Log retrieved values
-
-            return if (max > 0) current.toDouble() / max.toDouble() else 0.0
-        } catch (e: Exception) { // Catch potential exceptions during volume retrieval
-            Log.e(logTag, "Exception occurred inside getSystemVolume", e)
-            // Rethrow the exception so JS gets an error, wrapping the original cause
-            throw RuntimeException("Native error in getSystemVolume: ${e.message}", e)
-        }
-    }
 
   override fun activate(): Promise<Unit> = Promise.async {
     // no-op
@@ -65,9 +41,39 @@ class AudioManager(reactContext: ReactApplicationContext) : HybridAudioManagerSp
     // no-op
   }
 
-  override fun getOutputLatency(): Double = 0.0
+  /**
+   * Returns the buffer‑size / sample‑rate = seconds of latency per buffer.
+   * E.g. 256 frames @ 48 000 Hz ≈ 5.3 ms = 0.0053 s
+   */
+  override fun getOutputLatency(): Double {
+    val srStr    = am.getProperty(SysAudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)
+    val bufStr   = am.getProperty(SysAudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER)
 
-  override fun getInputLatency(): Double = 0.0
+    if (srStr == null || bufStr == null) {
+      Log.w(TAG, "Output latency props unavailable")
+      return -1.0
+    }
+
+    val sampleRate     = srStr.toIntOrNull() ?: return -1.0
+    val framesPerBuf   = bufStr.toIntOrNull() ?: return -1.0
+
+    return framesPerBuf.toDouble() / sampleRate.toDouble()
+  }
+
+  /**
+   * On Android S+ you can query the input buffer size; on older releases it’s not exposed.
+   */
+  override fun getInputLatency(): Double {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+      val inFramesStr = am.getProperty("android.media.property.INPUT_FRAMES_PER_BUFFER")
+      val srStr       = am.getProperty(SysAudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)
+      val inFrames    = inFramesStr?.toIntOrNull() ?: return -1.0
+      val sr          = srStr?.toIntOrNull()      ?: return -1.0
+      return inFrames.toDouble() / sr.toDouble()
+    }
+    // Property not computable in older versions
+    return -1.0
+  }
 
   override fun getAvailableInputs(): Array<PortDescription> = arrayOf()
 

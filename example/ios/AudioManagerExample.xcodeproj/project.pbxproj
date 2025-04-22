@@ -7,26 +7,26 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		10D761BFE36F6F3C11C71466 /* libPods-AudioManagerExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 69416E481FEF6AF1541F548F /* libPods-AudioManagerExample.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
+		A1EF91534DED7A83C6D6438F /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A16FE6536C741991D45CE8FB /* ExpoModulesProvider.swift */; };
+		A56B5AECE1BEEA82661AFA56 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B9CCB204DE743881DDEAA648 /* PrivacyInfo.xcprivacy */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
-		F2FFDCE5A6F1B5F70CD0B596 /* libPods-AudioManagerExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6EB68A0D727434B1AF23938C /* libPods-AudioManagerExample.a */; };
-		F77EC5F6354ECD1CDF3662A4 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AF9A1265D9D6034743DFD8 /* ExpoModulesProvider.swift */; };
-		FBA193F737D72F6ED8A7FD75 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 28072E5C179FC623833ACCFA /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		13B07F961A680F5B00A75B9A /* AudioManagerExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioManagerExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = AudioManagerExample/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = AudioManagerExample/Info.plist; sourceTree = "<group>"; };
-		1C21FD575D553B75E18DB34E /* Pods-AudioManagerExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudioManagerExample.debug.xcconfig"; path = "Target Support Files/Pods-AudioManagerExample/Pods-AudioManagerExample.debug.xcconfig"; sourceTree = "<group>"; };
-		28072E5C179FC623833ACCFA /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = AudioManagerExample/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		6EB68A0D727434B1AF23938C /* libPods-AudioManagerExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AudioManagerExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		9CB7F718A43A0E8221E3E026 /* Pods-AudioManagerExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudioManagerExample.release.xcconfig"; path = "Target Support Files/Pods-AudioManagerExample/Pods-AudioManagerExample.release.xcconfig"; sourceTree = "<group>"; };
+		2EC3EACDA9C4F6956B3AE68B /* Pods-AudioManagerExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudioManagerExample.release.xcconfig"; path = "Target Support Files/Pods-AudioManagerExample/Pods-AudioManagerExample.release.xcconfig"; sourceTree = "<group>"; };
+		69416E481FEF6AF1541F548F /* libPods-AudioManagerExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AudioManagerExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A16FE6536C741991D45CE8FB /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-AudioManagerExample/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		A5FF76BB76620FB3BF599BA9 /* Pods-AudioManagerExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudioManagerExample.debug.xcconfig"; path = "Target Support Files/Pods-AudioManagerExample/Pods-AudioManagerExample.debug.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = AudioManagerExample/SplashScreen.storyboard; sourceTree = "<group>"; };
+		B9CCB204DE743881DDEAA648 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = AudioManagerExample/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		C0AF9A1265D9D6034743DFD8 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-AudioManagerExample/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = AudioManagerExample/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* AudioManagerExample-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "AudioManagerExample-Bridging-Header.h"; path = "AudioManagerExample/AudioManagerExample-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F2FFDCE5A6F1B5F70CD0B596 /* libPods-AudioManagerExample.a in Frameworks */,
+				10D761BFE36F6F3C11C71466 /* libPods-AudioManagerExample.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,7 +53,7 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				28072E5C179FC623833ACCFA /* PrivacyInfo.xcprivacy */,
+				B9CCB204DE743881DDEAA648 /* PrivacyInfo.xcprivacy */,
 			);
 			name = AudioManagerExample;
 			sourceTree = "<group>";
@@ -62,17 +62,17 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				6EB68A0D727434B1AF23938C /* libPods-AudioManagerExample.a */,
+				69416E481FEF6AF1541F548F /* libPods-AudioManagerExample.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		7DD35B4A954441F8F298699A /* AudioManagerExample */ = {
+		4B73F7122C3EED6CE1009B19 /* ExpoModulesProviders */ = {
 			isa = PBXGroup;
 			children = (
-				C0AF9A1265D9D6034743DFD8 /* ExpoModulesProvider.swift */,
+				E9694DC3B25E505D6C6DD70B /* AudioManagerExample */,
 			);
-			name = AudioManagerExample;
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -89,8 +89,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				8AD180EAB39B4D7E5F2B2DDE /* Pods */,
-				A0C25D90A45C1D183A7288B3 /* ExpoModulesProviders */,
+				F16B6E54398208F9BB2E1A9E /* Pods */,
+				4B73F7122C3EED6CE1009B19 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -105,24 +105,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		8AD180EAB39B4D7E5F2B2DDE /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				1C21FD575D553B75E18DB34E /* Pods-AudioManagerExample.debug.xcconfig */,
-				9CB7F718A43A0E8221E3E026 /* Pods-AudioManagerExample.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		A0C25D90A45C1D183A7288B3 /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				7DD35B4A954441F8F298699A /* AudioManagerExample */,
-			);
-			name = ExpoModulesProviders;
-			sourceTree = "<group>";
-		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
 			isa = PBXGroup;
 			children = (
@@ -130,6 +112,24 @@
 			);
 			name = Supporting;
 			path = AudioManagerExample/Supporting;
+			sourceTree = "<group>";
+		};
+		E9694DC3B25E505D6C6DD70B /* AudioManagerExample */ = {
+			isa = PBXGroup;
+			children = (
+				A16FE6536C741991D45CE8FB /* ExpoModulesProvider.swift */,
+			);
+			name = AudioManagerExample;
+			sourceTree = "<group>";
+		};
+		F16B6E54398208F9BB2E1A9E /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				A5FF76BB76620FB3BF599BA9 /* Pods-AudioManagerExample.debug.xcconfig */,
+				2EC3EACDA9C4F6956B3AE68B /* Pods-AudioManagerExample.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -140,13 +140,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "AudioManagerExample" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				F2E4F67FFC997867577312D5 /* [Expo] Configure project */,
+				D5FFA3CBAE45CEAFCCB47367 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				DB5A9F10C8D416DB5510FC84 /* [CP] Embed Pods Frameworks */,
+				BF00577EFE29B1FE895E053F /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -196,7 +196,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				FBA193F737D72F6ED8A7FD75 /* PrivacyInfo.xcprivacy in Resources */,
+				A56B5AECE1BEEA82661AFA56 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -276,7 +276,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AudioManagerExample/Pods-AudioManagerExample-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		DB5A9F10C8D416DB5510FC84 /* [CP] Embed Pods Frameworks */ = {
+		BF00577EFE29B1FE895E053F /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -294,7 +294,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AudioManagerExample/Pods-AudioManagerExample-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		F2E4F67FFC997867577312D5 /* [Expo] Configure project */ = {
+		D5FFA3CBAE45CEAFCCB47367 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -321,7 +321,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				F77EC5F6354ECD1CDF3662A4 /* ExpoModulesProvider.swift in Sources */,
+				A1EF91534DED7A83C6D6438F /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -330,7 +330,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1C21FD575D553B75E18DB34E /* Pods-AudioManagerExample.debug.xcconfig */;
+			baseConfigurationReference = A5FF76BB76620FB3BF599BA9 /* Pods-AudioManagerExample.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -367,7 +367,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9CB7F718A43A0E8221E3E026 /* Pods-AudioManagerExample.release.xcconfig */;
+			baseConfigurationReference = 2EC3EACDA9C4F6956B3AE68B /* Pods-AudioManagerExample.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
