@@ -3,6 +3,7 @@ package com.margelo.nitro.audiomanager
 import android.os.Build
 import com.facebook.proguard.annotations.DoNotStrip
 import android.media.AudioManager as SysAudioManager
+import android.media.AudioDeviceInfo
 import com.margelo.nitro.NitroModules
 import android.content.Context
 import com.margelo.nitro.core.*
@@ -93,9 +94,21 @@ class AudioManager : HybridAudioManagerSpec() {
 
   override fun removeRouteChangeListeners(id: Double) { }
 
-  override fun isWiredHeadphonesConnected(): Boolean = false
+  override fun isWiredHeadphonesConnected(): Boolean {
+    val outputs: Array<AudioDeviceInfo> = am.getDevices(SysAudioManager.GET_DEVICES_OUTPUTS)
+    return outputs.any { device ->
+      device.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES ||
+      device.type == AudioDeviceInfo.TYPE_WIRED_HEADSET
+    }
+  }
 
-  override fun isBluetoothHeadphonesConnected(): Boolean = false
+  override fun isBluetoothHeadphonesConnected(): Boolean {
+    val outputs: Array<AudioDeviceInfo> = am.getDevices(SysAudioManager.GET_DEVICES_OUTPUTS)
+    return outputs.any { device ->
+      device.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
+      device.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO
+    }
+  }
 
   override fun getAudioSessionStatus(): AudioSessionStatus = AudioSessionStatus(
     category = AudioSessionCategory.AMBIENT,

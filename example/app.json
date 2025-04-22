@@ -25,6 +25,9 @@
     },
     "android": {
       "package": "audiomanager.example"
-    }
+    },
+    "plugins": [
+      "expo-build-properties"
+    ]
   }
 }
