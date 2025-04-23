@@ -23,12 +23,15 @@ import {
   activate,
   deactivate,
   getAudioSessionStatus,
-  configureAudioSession,
+  configureAudioAndActivate,
   addListener,
   useIsHeadphonesConnected,
   AudioSessionCategory,
   AudioSessionMode,
   AudioSessionRouteSharingPolicy,
+  AudioContentTypes,
+  AudioFocusGainTypes,
+  AudioUsages,
 } from 'react-native-audio-manager';
 
 export default function App() {
@@ -51,6 +54,7 @@ export default function App() {
   // attach a route‑change listener so we can update UI
   useEffect(() => {
     const unsub = addListener('routeChange', (evt) => {
+      console.log(`routeChange: ${evt.reason}`);
       setLastEvent(`routeChange: ${evt.reason}`);
       setInRoutes(getCurrentInputRoutes());
       setOutRoutes(getCurrentOutputRoutes());
@@ -157,10 +161,19 @@ export default function App() {
         <Button
           title="Configure Play & Record"
           onPress={() =>
-            configureAudioSession({
-              category: AudioSessionCategory.PlayAndRecord,
-              mode: AudioSessionMode.Default,
-              policy: AudioSessionRouteSharingPolicy.Default,
+            configureAudioAndActivate({
+              ios: {
+                category: AudioSessionCategory.PlayAndRecord,
+                mode: AudioSessionMode.Default,
+                policy: AudioSessionRouteSharingPolicy.Default,
+              },
+              android: {
+                focusGain: AudioFocusGainTypes.GainTransient,
+                contentType: AudioContentTypes.Movie,
+                usage: AudioUsages.Media,
+                acceptsDelayedFocusGain: true,
+                willPauseWhenDucked: false,
+              },
             })
           }
         />

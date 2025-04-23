@@ -436,13 +436,30 @@ export type AudioSessionStatus = {
   isEchoCancelledInputAvailable: boolean;
 };
 
-export type AudioSessionDeactivationOptions = {
+export type DeactivationOptions = {
+  /**
+   * Which platform(s) to deactivate on.
+   * - `ios`: only call the iOS activate API
+   * - `android`: only call the Android activate API
+   * - `both` (default): call both
+   */
+  platform?: 'ios' | 'android' | 'both';
   /**
    * Restores the previous AVAudioSession when this one ends. For example, if you are listening to music in the backgorund
    * and this audio session starts, it will pause the music. When you call `deactivate` it will play the music again.
    * @default true
    */
   restorePreviousSessionOnDeactivation?: boolean;
+};
+
+export type ActivationOptions = {
+  /**
+   * Which platform(s) to activate on.
+   * - `ios`: only call the iOS activate API
+   * - `android`: only call the Android activate API
+   * - `both` (default): call both
+   */
+  platform?: 'ios' | 'android' | 'both';
 };
 
 export type RouteChangeReason =
@@ -503,7 +520,93 @@ export const RingerModes = {
 export type AudioMode = (typeof AudioModes)[keyof typeof AudioModes];
 export type RingerMode = (typeof RingerModes)[keyof typeof RingerModes];
 
+export const AudioFocusGainTypes = {
+  Gain: 'Gain' as const,
+  GainTransient: 'GainTransient' as const,
+  GainTransientMayDuck: 'GainTransientMayDuck' as const,
+  GainTransientExclusive: 'GainTransientExclusive' as const,
+  GainTransientAllowPause: 'GainTransientAllowPause' as const,
+} as const;
+export type AudioFocusGainType =
+  (typeof AudioFocusGainTypes)[keyof typeof AudioFocusGainTypes];
+
+export const AudioUsages = {
+  Alarm: 'Alarm' as const,
+  AssistanceAccessibility: 'AssistanceAccessibility' as const,
+  AssistanceNavigationGuidance: 'AssistanceNavigationGuidance' as const,
+  AssistanceSonification: 'AssistanceSonification' as const,
+  Assistant: 'Assistant' as const,
+  Game: 'Game' as const,
+  Media: 'Media' as const,
+  Notification: 'Notification' as const,
+  NotificationCommunicationDelayed: 'NotificationCommunicationDelayed' as const,
+  NotificationCommunicationInstant: 'NotificationCommunicationInstant' as const,
+  NotificationCommunicationRequest: 'NotificationCommunicationRequest' as const,
+  NotificationEvent: 'NotificationEvent' as const,
+  NotificationRingtone: 'NotificationRingtone' as const,
+  Unknown: 'Unknown' as const,
+  VoiceCommunication: 'VoiceCommunication' as const,
+  VoiceCommunicationSignalling: 'VoiceCommunicationSignalling' as const,
+} as const;
+export type AudioUsage = (typeof AudioUsages)[keyof typeof AudioUsages];
+
+export const AudioContentTypes = {
+  Music: 'Music' as const,
+  Speech: 'Speech' as const,
+  Movie: 'Movie' as const,
+  Sonification: 'Sonification' as const,
+  Unknown: 'Unknown' as const,
+} as const;
+export type AudioContentType =
+  (typeof AudioContentTypes)[keyof typeof AudioContentTypes];
+
 export interface AudioManagerStatus {
   mode: AudioMode;
   ringerMode: RingerMode;
+  focusGain: AudioFocusGainType;
+  usage: AudioUsage;
+  contentType: AudioContentType;
+  willPauseWhenDucked: boolean;
+  acceptsDelayedFocusGain: boolean;
 }
+
+/**
+ * Exactly the parameters your existing configureAudioSession() expects.
+ */
+export type AudioSessionConfiguration<
+  T extends AudioSessionCategory,
+  M extends AudioSessionCompatibleModes[T],
+  N extends AudioSessionCompatibleCategoryOptions[T],
+> = {
+  category: T;
+  mode?: M;
+  policy?: AudioSessionRouteSharingPolicy;
+  categoryOptions?: N[];
+  prefersNoInterruptionFromSystemAlerts?: boolean;
+  prefersInterruptionOnRouteDisconnect?: boolean;
+  allowHapticsAndSystemSoundsDuringRecording?: boolean;
+  prefersEchoCancelledInput?: boolean;
+};
+
+/**
+ * Exactly the parameters your Android configureAudioManager() expects.
+ */
+export interface AudioManagerConfiguration {
+  focusGain: AudioFocusGainType;
+  usage: AudioUsage;
+  contentType: AudioContentType;
+  willPauseWhenDucked: boolean;
+  acceptsDelayedFocusGain: boolean;
+}
+
+/**
+ * Convenient union of both iOS + Android configs.
+ */
+export type ConfigureAudioAndActivateParams<
+  T extends AudioSessionCategory,
+  M extends AudioSessionCompatibleModes[T],
+  N extends AudioSessionCompatibleCategoryOptions[T],
+> = {
+  ios?: AudioSessionConfiguration<T, M, N>;
+  android?: AudioManagerConfiguration;
+};

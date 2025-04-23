@@ -12,9 +12,6 @@ export interface AudioManager
   /**
    * BOTH PLATFORMS
    */
-
-  activate(): Promise<void>;
-  deactivate(restorePreviousSessionOnDeactivation: boolean): Promise<void>;
   getOutputLatency(): number;
   getInputLatency(): number;
   getAvailableInputs(): PortDescription[];
@@ -26,6 +23,8 @@ export interface AudioManager
   /**
    * IOS ONLY
    */
+  activateIOS(): Promise<void>;
+  deactivateIOS(restorePreviousSessionOnDeactivation: boolean): Promise<void>;
   forceOutputToSpeaker(): void;
   cancelForcedOutputToSpeaker(): void;
   addInterruptionListener(callback: (type: InterruptionEvent) => void): number;
@@ -33,7 +32,7 @@ export interface AudioManager
   addRouteChangeListener(callback: (event: RouteChangeEvent) => void): number;
   removeRouteChangeListeners(id: number): void;
   getAudioSessionStatusIOS(): AudioSessionStatus | undefined;
-  configureAudioSessionIOS(
+  configureAudioSession(
     category: string,
     mode: string,
     policy: string,
@@ -46,5 +45,14 @@ export interface AudioManager
   /**
    * Android Only
    */
+  activateAndroid(): Promise<void>;
+  deactivateAndroid(): Promise<void>;
   getAudioManagerStatusAndroid(): AudioManagerStatus | undefined;
+  configureAudioManager(
+    focusGain: string,
+    usage: string,
+    contentType: string,
+    willPauseWhenDucked: boolean,
+    acceptsDelayedFocusGain: boolean
+  ): void;
 }

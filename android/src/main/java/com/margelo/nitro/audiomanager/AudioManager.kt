@@ -5,6 +5,8 @@ import com.facebook.proguard.annotations.DoNotStrip
 import android.media.AudioManager as SysAudioManager
 import android.media.AudioDeviceInfo
 import android.media.AudioDeviceCallback
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
 import com.margelo.nitro.NitroModules
 import android.content.Context
 import com.margelo.nitro.core.*
@@ -36,7 +38,16 @@ class AudioManager : HybridAudioManagerSpec() {
   private val interruptionListeners = mutableListOf<Listener<(InterruptionEvent) -> Unit>>()
   private val routeChangeListeners = mutableListOf<Listener<(RouteChangeEvent) -> Unit>>()
   private var nextListenerId = 0.0
+
   private var lastRoute: Array<PortDescription> = emptyArray()
+
+  private var currentFocusRequest: AudioFocusRequest? = null
+
+  private var focusGainType: Int = SysAudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
+  private var usage: Int         = AudioAttributes.USAGE_MEDIA
+  private var contentType: Int   = AudioAttributes.CONTENT_TYPE_MUSIC
+  private var willPauseWhenDucked: Boolean    = true
+  private var acceptsDelayedFocusGain: Boolean = false
 
   private val focusCallback = SysAudioManager.OnAudioFocusChangeListener { focus ->
     val type = when (focus) {
@@ -128,14 +139,51 @@ class AudioManager : HybridAudioManagerSpec() {
     return if (max > 0) current.toDouble() / max.toDouble() else 0.0
   }
 
+  override fun activateIOS(): Promise<Unit> = Promise.async {}
 
-  override fun activate(): Promise<Unit> = Promise.async {
-    // no-op
+
+  override fun activateAndroid(): Promise<Unit> = Promise.async {
+      if (currentFocusRequest == null) {
+
+        val attrs = AudioAttributes.Builder()
+          .setUsage(usage)
+          .setContentType(contentType)
+          .build()
+
+        currentFocusRequest = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+          AudioFocusRequest.Builder(focusGainType)
+            .setAudioAttributes(attrs)
+            .setWillPauseWhenDucked(willPauseWhenDucked)
+            .setAcceptsDelayedFocusGain(acceptsDelayedFocusGain)
+            .setOnAudioFocusChangeListener(focusCallback)
+            .build()
+        } else null
+      }
+
+      val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && currentFocusRequest != null) {
+        am.requestAudioFocus(currentFocusRequest!!)
+      } else {
+        am.requestAudioFocus(
+          focusCallback,
+          SysAudioManager.STREAM_MUSIC,
+          focusGainType
+        )
+      }
+
+      if (result != SysAudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+        throw Exception("Audio focus request failed: $result")
+      }
   }
 
-  override fun deactivate(restorePreviousSessionOnDeactivation: Boolean): Promise<Unit> = Promise.async {
-    // no-op
+  override fun deactivateAndroid(): Promise<Unit> = Promise.async {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && currentFocusRequest != null) {
+        am.abandonAudioFocusRequest(currentFocusRequest!!)
+      } else {
+        am.abandonAudioFocus(focusCallback)
+      }
   }
+
+  override fun deactivateIOS(restorePreviousSessionOnDeactivation: Boolean): Promise<Unit> = Promise.async { }
 
   /**
    * Returns the buffer‑size / sample‑rate = seconds of latency per buffer.
@@ -272,9 +320,13 @@ class AudioManager : HybridAudioManagerSpec() {
       ?: arrayOf()
   }
 
-  override fun forceOutputToSpeaker() { }
+  override fun forceOutputToSpeaker() { 
+    // no op
+  }
 
-  override fun cancelForcedOutputToSpeaker() { }
+  override fun cancelForcedOutputToSpeaker() { 
+    // no op
+  }
 
   override fun isWiredHeadphonesConnected(): Boolean {
     val outputs: Array<AudioDeviceInfo> = am.getDevices(SysAudioManager.GET_DEVICES_OUTPUTS)
@@ -302,16 +354,12 @@ class AudioManager : HybridAudioManagerSpec() {
       Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
         am.mode == SysAudioManager.MODE_CALL_SCREENING ->
           AudioMode.CALLSCREENING
-
       am.mode == SysAudioManager.MODE_RINGTONE ->
           AudioMode.RINGTONE
-
       am.mode == SysAudioManager.MODE_IN_CALL ->
           AudioMode.INCALL
-
       am.mode == SysAudioManager.MODE_IN_COMMUNICATION ->
           AudioMode.INCOMMUNICATION
-
       else ->
           AudioMode.NORMAL
     }
@@ -322,13 +370,55 @@ class AudioManager : HybridAudioManagerSpec() {
       else                                -> RingerMode.NORMAL
     }
 
+    val focusGainEnum = when (focusGainType) {
+      SysAudioManager.AUDIOFOCUS_GAIN                        -> AudioFocusGainType.GAIN
+      SysAudioManager.AUDIOFOCUS_GAIN_TRANSIENT              -> AudioFocusGainType.GAINTRANSIENT
+      SysAudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK     -> AudioFocusGainType.GAINTRANSIENTMAYDUCK
+      SysAudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE    -> AudioFocusGainType.GAINTRANSIENTEXCLUSIVE
+      else                                                   -> AudioFocusGainType.GAIN
+    }
+
+    val usageEnum = when (usage) {
+      AudioAttributes.USAGE_ALARM                             -> AudioUsage.ALARM
+      AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY           -> AudioUsage.ASSISTANCEACCESSIBILITY
+      AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE     -> AudioUsage.ASSISTANCENAVIGATIONGUIDANCE
+      AudioAttributes.USAGE_ASSISTANCE_SONIFICATION            -> AudioUsage.ASSISTANCESONIFICATION
+      AudioAttributes.USAGE_ASSISTANT                          -> AudioUsage.ASSISTANT
+      AudioAttributes.USAGE_GAME                               -> AudioUsage.GAME
+      AudioAttributes.USAGE_MEDIA                              -> AudioUsage.MEDIA
+      AudioAttributes.USAGE_NOTIFICATION                       -> AudioUsage.NOTIFICATION
+      AudioAttributes.USAGE_NOTIFICATION_COMMUNICATION_DELAYED,
+      AudioAttributes.USAGE_NOTIFICATION_COMMUNICATION_INSTANT,
+      AudioAttributes.USAGE_NOTIFICATION_COMMUNICATION_REQUEST -> AudioUsage.NOTIFICATION
+      AudioAttributes.USAGE_NOTIFICATION_EVENT                 -> AudioUsage.NOTIFICATIONEVENT
+      AudioAttributes.USAGE_NOTIFICATION_RINGTONE              -> AudioUsage.NOTIFICATIONRINGTONE
+      AudioAttributes.USAGE_UNKNOWN                            -> AudioUsage.UNKNOWN
+      AudioAttributes.USAGE_VOICE_COMMUNICATION                 -> AudioUsage.VOICECOMMUNICATION
+      AudioAttributes.USAGE_VOICE_COMMUNICATION_SIGNALLING      -> AudioUsage.VOICECOMMUNICATIONSIGNALLING
+      else                                                    -> AudioUsage.UNKNOWN
+    }
+
+    val contentEnum = when (contentType) {
+      AudioAttributes.CONTENT_TYPE_MOVIE        -> AudioContentType.MOVIE
+      AudioAttributes.CONTENT_TYPE_MUSIC        -> AudioContentType.MUSIC
+      AudioAttributes.CONTENT_TYPE_SONIFICATION -> AudioContentType.SONIFICATION
+      AudioAttributes.CONTENT_TYPE_SPEECH       -> AudioContentType.SPEECH
+      AudioAttributes.CONTENT_TYPE_UNKNOWN      -> AudioContentType.UNKNOWN
+      else                                      -> AudioContentType.UNKNOWN
+    }
+
     return AudioManagerStatus(
-      mode       = mode,
-      ringerMode = ringer
+      mode                   = mode,
+      ringerMode             = ringer,
+      focusGain              = focusGainEnum,
+      usage                  = usageEnum,
+      contentType            = contentEnum,
+      willPauseWhenDucked    = willPauseWhenDucked,
+      acceptsDelayedFocusGain= acceptsDelayedFocusGain
     )
   }
 
-  override fun configureAudioSessionIOS(
+  override fun configureAudioSession(
     category: String,
     mode: String,
     policy: String,
@@ -339,5 +429,42 @@ class AudioManager : HybridAudioManagerSpec() {
     prefersEchoCancelledInput: Boolean
   ) {
     // no-op
+  }
+
+  override fun configureAudioManager(
+    focusGain: String,
+    usage: String,
+    contentType: String,
+    willPauseWhenDucked: Boolean,
+    acceptsDelayedFocusGain: Boolean
+  ): Unit {
+    focusGainType = when (focusGain) {
+      "GAIN"                    -> SysAudioManager.AUDIOFOCUS_GAIN
+      "GAIN_TRANSIENT"          -> SysAudioManager.AUDIOFOCUS_GAIN_TRANSIENT
+      "GAIN_TRANSIENT_MAY_DUCK" -> SysAudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
+      "GAIN_TRANSIENT_EXCLUSIVE"-> SysAudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE
+      "GAIN_TRANSIENT_ALLOW_PAUSE" ->
+        SysAudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
+      else -> SysAudioManager.AUDIOFOCUS_GAIN
+    }
+
+    this.usage = when (usage) {
+      "USAGE_GAME"                -> AudioAttributes.USAGE_GAME
+      "USAGE_VOICE_COMMUNICATION" -> AudioAttributes.USAGE_VOICE_COMMUNICATION
+      "USAGE_ALARM"               -> AudioAttributes.USAGE_ALARM
+      "USAGE_NOTIFICATION"        -> AudioAttributes.USAGE_NOTIFICATION
+      else                        -> AudioAttributes.USAGE_MEDIA
+    }
+
+    this.contentType = when (contentType) {
+      "CONTENT_TYPE_SPEECH"      -> AudioAttributes.CONTENT_TYPE_SPEECH
+      "CONTENT_TYPE_MOVIE"       -> AudioAttributes.CONTENT_TYPE_MOVIE
+      "CONTENT_TYPE_SONIFICATION"-> AudioAttributes.CONTENT_TYPE_SONIFICATION
+      else                       -> AudioAttributes.CONTENT_TYPE_MUSIC
+    }
+
+    // direct assignment now that both sides are non-nullable
+    this.willPauseWhenDucked     = willPauseWhenDucked
+    this.acceptsDelayedFocusGain = acceptsDelayedFocusGain
   }
 }

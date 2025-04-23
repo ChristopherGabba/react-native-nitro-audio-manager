@@ -397,7 +397,7 @@ class AudioManager: HybridAudioManagerSpec {
     }
   }
 
-  public func activate() throws -> Promise<Void> {
+  public func activateIOS() throws -> Promise<Void> {
     return Promise.async {
       do {
         try AVAudioSession.sharedInstance().setActive(true)
@@ -407,7 +407,13 @@ class AudioManager: HybridAudioManagerSpec {
     }
   }
 
-  public func deactivate(restorePreviousSessionOnDeactivation: Bool) throws -> Promise<Void> {
+  public func activateAndroid() throws -> Promise<Void> {
+    return Promise.async {
+    // no-op  
+    }
+  }
+
+  public func deactivateIOS(restorePreviousSessionOnDeactivation: Bool) throws -> Promise<Void> {
     var options: AVAudioSession.SetActiveOptions = []
 
     if restorePreviousSessionOnDeactivation {
@@ -420,6 +426,12 @@ class AudioManager: HybridAudioManagerSpec {
       } catch {
         throw RuntimeError.error(withMessage: "Failed to deactivate audio session")
       }
+    }
+  }
+
+  public func deactivateAndroid() throws -> Promise<Void> {
+    return Promise.async {
+    // no-op  
     }
   }
 
@@ -471,7 +483,7 @@ class AudioManager: HybridAudioManagerSpec {
     )
   }
 
-  func configureAudioSessionIOS(
+  func configureAudioSession(
     category categoryName: String,
     mode modeName: String,
     policy policyName: String,
@@ -602,5 +614,15 @@ class AudioManager: HybridAudioManagerSpec {
         NSLog("Failed to set prefersEchoCancelledInput: %@", error as NSError)
       }
     }
+  }
+
+  func configureAudioManager(
+    focusGain: String,
+    usage: String,
+    contentType: String,
+    willPauseWhenDucked: Bool,
+    acceptsDelayedFocusGain: Bool
+  ) {
+    // no-op
   }
 }
