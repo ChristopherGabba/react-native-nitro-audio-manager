@@ -171,7 +171,9 @@ class AudioManager: HybridAudioManagerSpec {
   }
 
   public func isWiredHeadphonesConnected() -> Bool {
-    return AVAudioSession.sharedInstance().currentRoute.outputs.contains { $0.portType == .headphones }
+    return AVAudioSession.sharedInstance().currentRoute.outputs.contains {
+      $0.portType == .headphones
+    }
   }
 
   public func isBluetoothHeadphonesConnected() -> Bool {
@@ -207,54 +209,54 @@ class AudioManager: HybridAudioManagerSpec {
     )
   }
 
-  private func readablePortType(for port: AVAudioSession.Port) -> String {
+  private func readablePortType(for port: AVAudioSession.Port) -> PortType {
     switch port {
     case .builtInMic:
-      return "BuiltInMicrophone"
+      return .builtinmic
     case .headsetMic:
-      return "HeadsetMicrophone"
+      return .headsetmic
     case .lineIn:
-      return "LineIn"
+      return .linein
     case .airPlay:
-      return "AirPlay"
+      return .airplay
     case .bluetoothA2DP:
-      return "BluetoothA2DP"
+      return .bluetootha2dp
     case .bluetoothLE:
-      return "BluetoothLE"
+      return .bluetoothle
     case .builtInReceiver:
-      return "BuiltInReceiver"
+      return .builtinreceiver
     case .builtInSpeaker:
-      return "BuiltInSpeaker"
+      return .builtinspeaker
     case .HDMI:
-      return "HDMI"
+      return .hdmi
     case .headphones:
-      return "Headphones"
+      return .headphones
     case .lineOut:
-      return "LineOut"
+      return .lineout
     case .AVB:
-      return "AVBDevice"
+      return .avb
     case .PCI:
-      return "PCIDevice"
+      return .pci
     case .bluetoothHFP:
-      return "BluetoothHFP"
+      return .bluetoothhfp
     case .carAudio:
-      return "CarAudio"
+      return .caraudio
     case .displayPort:
-      return "DisplayPort"
+      return .displayport
     case .fireWire:
-      return "FireWire"
+      return .firewire
     case .thunderbolt:
-      return "Thunderbolt"
+      return .thunderbolt
     case .usbAudio:
-      return "USBAudio"
+      return .usbaudio
     case .virtual:
-      return "VirtualAudioDevice"
+      return .virtual
 
     default:
       if #available(iOS 17.0, *), port == .continuityMicrophone {
-        return "ContinuityMicrophone"
+        return .continuitymicrophone
       }
-      return port.rawValue  // fallback for unknown/future ports
+      return .unknown
     }
   }
 
@@ -354,6 +356,7 @@ class AudioManager: HybridAudioManagerSpec {
     return Double(AVAudioSession.sharedInstance().outputLatency)
   }
 
+  // on ios this is based on system category
   public func getAvailableInputs() throws -> [PortDescription] {
     return (AVAudioSession.sharedInstance().availableInputs ?? []).map(serializePort)
   }
@@ -420,7 +423,12 @@ class AudioManager: HybridAudioManagerSpec {
     }
   }
 
-  public func getAudioSessionStatus() -> AudioSessionStatus {
+  public func getAudioManagerStatusAndroid() -> AudioManagerStatus? {
+    // no op
+    return nil
+  }
+
+  public func getAudioSessionStatusIOS() -> AudioSessionStatus? {
     let session = AVAudioSession.sharedInstance()
 
     // ---- All of these come as Bitwise numbers that have to be converted to strings on the native side ----
@@ -463,7 +471,7 @@ class AudioManager: HybridAudioManagerSpec {
     )
   }
 
-  func configureAudioSession(
+  func configureAudioSessionIOS(
     category categoryName: String,
     mode modeName: String,
     policy policyName: String,

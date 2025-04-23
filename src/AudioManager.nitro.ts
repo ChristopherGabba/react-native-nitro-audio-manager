@@ -1,5 +1,6 @@
 import type { HybridObject } from 'react-native-nitro-modules';
 import type {
+  AudioManagerStatus,
   AudioSessionStatus,
   InterruptionEvent,
   PortDescription,
@@ -9,9 +10,9 @@ import type {
 export interface AudioManager
   extends HybridObject<{ ios: 'swift'; android: 'kotlin' }> {
   /**
-   * IOS Only
+   * BOTH PLATFORMS
    */
-  getSystemVolume(): number;
+
   activate(): Promise<void>;
   deactivate(restorePreviousSessionOnDeactivation: boolean): Promise<void>;
   getOutputLatency(): number;
@@ -19,16 +20,20 @@ export interface AudioManager
   getAvailableInputs(): PortDescription[];
   getCurrentInputRoutes(): PortDescription[];
   getCurrentOutputRoutes(): PortDescription[];
+  isWiredHeadphonesConnected(): boolean;
+  isBluetoothHeadphonesConnected(): boolean;
+  getSystemVolume(): number;
+  /**
+   * IOS ONLY
+   */
   forceOutputToSpeaker(): void;
   cancelForcedOutputToSpeaker(): void;
   addInterruptionListener(callback: (type: InterruptionEvent) => void): number;
   removeInterruptionListeners(id: number): void;
   addRouteChangeListener(callback: (event: RouteChangeEvent) => void): number;
   removeRouteChangeListeners(id: number): void;
-  isWiredHeadphonesConnected(): boolean;
-  isBluetoothHeadphonesConnected(): boolean;
-  getAudioSessionStatus(): AudioSessionStatus;
-  configureAudioSession(
+  getAudioSessionStatusIOS(): AudioSessionStatus | undefined;
+  configureAudioSessionIOS(
     category: string,
     mode: string,
     policy: string,
@@ -41,4 +46,5 @@ export interface AudioManager
   /**
    * Android Only
    */
+  getAudioManagerStatusAndroid(): AudioManagerStatus | undefined;
 }

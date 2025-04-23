@@ -58,6 +58,13 @@ export default function App() {
     return unsub;
   }, []);
 
+  useEffect(() => {
+    const unsub = addListener('audioInterruption', (evt) => {
+      setLastEvent(`audioInterruption: ${evt.reason}`);
+    });
+    return unsub;
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.inner}>

@@ -1,6 +1,7 @@
 import { NitroModules } from 'react-native-nitro-modules';
 import type { AudioManager } from './AudioManager.nitro';
 import {
+  AudioManagerStatus,
   AudioSessionCategory,
   AudioSessionCompatibleCategoryOptions,
   AudioSessionCompatibleModes,
@@ -30,8 +31,10 @@ const AudioManagerHybridObject =
   NitroModules.createHybridObject<AudioManager>('AudioManager');
 
 /**
- * Returns the current system volume.
- * @returns A number between 0–1
+ * Returns the current system volume:
+ * - **iOS:** a single number in the range [0–1]
+ * - **Android:** an object `{ music, ring, alarm, … }` each in [0–1]
+ * - **other platforms:** `undefined`
  */
 export function getSystemVolume(): number {
   return AudioManagerHybridObject.getSystemVolume();
@@ -121,17 +124,19 @@ export async function deactivate(
   }
 }
 
+type StatusResult = AudioSessionStatus | AudioManagerStatus | undefined;
+
 /**
  * Retrieves the current AVAudioSession configuration details (category, mode, options, etc).
  * @platform ios
  * @returns {AudioSessionStatus} A promise that resolves with the audio session status.
  */
-export function getAudioSessionStatus(): AudioSessionStatus | undefined {
-  if (isIOS) {
-    return AudioManagerHybridObject.getAudioSessionStatus();
-  } else {
-    return undefined;
-  }
+export function getAudioSessionStatus(): StatusResult {
+  return Platform.select<StatusResult>({
+    ios: AudioManagerHybridObject.getAudioSessionStatusIOS(),
+    android: AudioManagerHybridObject.getAudioManagerStatusAndroid(),
+    default: undefined,
+  });
 }
 
 /**
@@ -231,7 +236,7 @@ export function configureAudioSession<
     const resolvedMode: AudioSessionCompatibleModes[T] = (mode ??
       AudioSessionMode.Default) as AudioSessionCompatibleModes[T];
 
-    return AudioManagerHybridObject.configureAudioSession(
+    return AudioManagerHybridObject.configureAudioSessionIOS(
       category,
       resolvedMode,
       policy,

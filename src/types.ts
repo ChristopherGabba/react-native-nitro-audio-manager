@@ -1,30 +1,119 @@
-export type AudioSessionPortType =
-  | 'BuiltInMicrophone'
-  | 'ContinuityMicrophone'
-  | 'HeadsetMicrophone'
-  | 'LineIn'
-  | 'AirPlay'
-  | 'BluetoothA2DP'
-  | 'BluetoothLE'
-  | 'BuiltInReceiver'
-  | 'BuiltInSpeaker'
-  | 'HDMI'
-  | 'Headphones'
-  | 'LineOut'
-  | 'AVB'
-  | 'PCI'
-  | 'Bluetooth HFP'
-  | 'CarAudio'
-  | 'DisplayPort'
-  | 'FireWire'
-  | 'Thunderbolt'
-  | 'USBAudio'
-  | 'Virtual'
-  | string; // fallback for future or unknown values
+/**
+ * Input ports for receiving audio from various sources.
+ */
+export const InputPort = {
+  /**
+   * An input from a device’s built-in microphone.
+   */
+  BuiltInMic: 'BuiltInMic',
+  /**
+   * An input from a Continuity Microphone on Apple TV.
+   */
+  ContinuityMicrophone: 'ContinuityMicrophone',
+  /**
+   * An input from a wired headset’s built-in microphone.
+   */
+  HeadsetMic: 'HeadsetMic',
+  /**
+   * A line-level input from the dock connector.
+   */
+  LineIn: 'LineIn',
+} as const;
+
+/**
+ * Output ports for sending audio to various destinations.
+ */
+export const OutputPort = {
+  /**
+   * An output to an AirPlay device.
+   */
+  AirPlay: 'AirPlay',
+  /**
+   * An output to a Bluetooth A2DP device.
+   */
+  BluetoothA2DP: 'BluetoothA2DP',
+  /**
+   * An output to a Bluetooth Low Energy (LE) device.
+   */
+  BluetoothLE: 'BluetoothLE',
+  /**
+   * An output to the speaker you hold to your ear when you’re on a phone call.
+   */
+  BuiltInReceiver: 'BuiltInReceiver',
+  /**
+   * An output to the device’s built-in speaker.
+   */
+  BuiltInSpeaker: 'BuiltInSpeaker',
+  /**
+   * An output to a High-Definition Multimedia Interface (HDMI) device.
+   */
+  HDMI: 'HDMI',
+  /**
+   * An output to wired headphones.
+   */
+  Headphones: 'Headphones',
+  /**
+   * A line-level output to the dock connector.
+   */
+  LineOut: 'LineOut',
+} as const;
+
+/**
+ * Input/Output ports for bidirectional audio connections.
+ */
+export const InputOutputPort = {
+  /**
+   * An I/O connection to an Audio Video Bridging (AVB) device.
+   */
+  AVB: 'AVB',
+  /**
+   * An I/O connection to a Peripheral Component Interconnect (PCI) device.
+   */
+  PCI: 'PCI',
+  /**
+   * An I/O connection to a Bluetooth Hands-Free Profile device.
+   */
+  BluetoothHFP: 'BluetoothHFP',
+  /**
+   * An I/O connection through Car Audio.
+   */
+  CarAudio: 'CarAudio',
+  /**
+   * An I/O connection to a DisplayPort device.
+   */
+  DisplayPort: 'DisplayPort',
+  /**
+   * An I/O connection to a FireWire device.
+   */
+  FireWire: 'FireWire',
+  /**
+   * An I/O connection to a Thunderbolt device.
+   */
+  Thunderbolt: 'Thunderbolt',
+  /**
+   * An I/O connection to a Universal Serial Bus (USB) device.
+   */
+  USBAudio: 'USBAudio',
+  /**
+   * An I/O connection that doesn’t correspond to physical audio hardware.
+   */
+  Virtual: 'Virtual',
+  /**
+   * The device type is unknown.
+   */
+  Unknown: 'Unknown',
+} as const;
+
+export type InputPort = (typeof InputPort)[keyof typeof InputPort];
+export type OutputPort = (typeof OutputPort)[keyof typeof OutputPort];
+export type InputOutputPort =
+  (typeof InputOutputPort)[keyof typeof InputOutputPort];
+
+export type PortType = InputPort | OutputPort | InputOutputPort;
 
 export type PortDescription = {
   portName: string;
-  portType: AudioSessionPortType;
+  portType: PortType;
   uid: string;
   channels?: number[];
   isDataSourceSupported?: boolean;
@@ -396,3 +485,25 @@ export type HeadphonesConnectedResult = {
   wireless: boolean;
   wired: boolean;
 };
+
+export const AudioModes = {
+  Normal: 'Normal',
+  RingTone: 'RingTone',
+  InCall: 'InCall',
+  InCommunication: 'InCommunication',
+  CallScreening: 'CallScreening', // API 23+
+} as const;
+
+export const RingerModes = {
+  Normal: 'Normal',
+  Silent: 'Silent',
+  Vibrate: 'Vibrate',
+} as const;
+
+export type AudioMode = (typeof AudioModes)[keyof typeof AudioModes];
+export type RingerMode = (typeof RingerModes)[keyof typeof RingerModes];
+
+export interface AudioManagerStatus {
+  mode: AudioMode;
+  ringerMode: RingerMode;
+}
