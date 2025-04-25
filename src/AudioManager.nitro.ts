@@ -21,17 +21,27 @@ export interface AudioManager
   isWiredHeadphonesConnected(): boolean;
   isBluetoothHeadphonesConnected(): boolean;
   getSystemVolume(): number;
+  activate(
+    warningCallback: (warning: AudioSessionWarning) => void
+  ): Promise<void>;
+  deactivate(
+    restorePreviousSessionOnDeactivation: boolean,
+    fallbackToAmbientCategoryAndLeaveActiveForVolumeListener: boolean,
+    warningCallback: (warning: AudioSessionWarning) => void
+  ): Promise<void>;
   /**
    * IOS ONLY
    */
-  activateIOS(): Promise<void>;
-  deactivateIOS(restorePreviousSessionOnDeactivation: boolean): Promise<void>;
-  forceOutputToSpeaker(): void;
+
+  isActive(): boolean;
+  forceOutputToSpeaker(
+    warningCallback: (warning: AudioSessionWarning) => void
+  ): void;
   cancelForcedOutputToSpeaker(): void;
   addInterruptionListener(callback: (type: InterruptionEvent) => void): number;
-  removeInterruptionListeners(id: number): void;
+  removeInterruptionListener(id: number): void;
   addRouteChangeListener(callback: (event: RouteChangeEvent) => void): number;
-  removeRouteChangeListeners(id: number): void;
+  removeRouteChangeListener(id: number): void;
   addVolumeListener(callback: (value: number) => void): number;
   removeVolumeListener(id: number): void;
   getAudioSessionStatusIOS(): AudioSessionStatus | undefined;
@@ -49,8 +59,6 @@ export interface AudioManager
   /**
    * Android Only
    */
-  activateAndroid(): Promise<void>;
-  deactivateAndroid(): Promise<void>;
   getAudioManagerStatusAndroid(): AudioManagerStatus | undefined;
   configureAudioManager(
     focusGain: string,

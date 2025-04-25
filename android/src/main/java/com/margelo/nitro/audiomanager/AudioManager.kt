@@ -37,10 +37,11 @@ class AudioManager : HybridAudioManagerSpec() {
 
   private val interruptionListeners = mutableListOf<Listener<(InterruptionEvent) -> Unit>>()
   private val routeChangeListeners = mutableListOf<Listener<(RouteChangeEvent) -> Unit>>()
+  private val volumeListeners = mutableListOf<Listener<(Double) -> Unit>>()
+
   private var nextListenerId = 0.0
 
   private var lastRoute: Array<PortDescription> = emptyArray()
-
   private var currentFocusRequest: AudioFocusRequest? = null
 
   private var focusGainType: Int = SysAudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
@@ -90,7 +91,7 @@ class AudioManager : HybridAudioManagerSpec() {
     return id
   }
 
-  override fun removeInterruptionListeners(id: Double) {
+  override fun removeInterruptionListener(id: Double) {
     interruptionListeners.removeAll { it.id == id }
   }
 
@@ -108,7 +109,7 @@ class AudioManager : HybridAudioManagerSpec() {
     return id
   }
 
-  override fun removeRouteChangeListeners(id: Double) {
+  override fun removeRouteChangeListener(id: Double) {
     routeChangeListeners.removeAll { it.id == id }
     if (routeChangeListeners.isEmpty()) {
       am.unregisterAudioDeviceCallback(deviceCallback)
@@ -133,16 +134,32 @@ class AudioManager : HybridAudioManagerSpec() {
     routeChangeListeners.forEach { it.callback(ev) }
   }
 
+    override fun addVolumeListener(callback: (Double) -> Unit): Double {
+    if (volumeListeners.isEmpty()) {
+      lastRoute = am
+        .getDevices(SysAudioManager.GET_DEVICES_OUTPUTS)
+        .map { mapToPort(it) }
+        .toTypedArray()
+
+      am.registerAudioDeviceCallback(deviceCallback, null)
+    }
+    val id = nextListenerId++
+    volumeListeners += Listener(id, callback)
+    return id
+  }
+
+
+  override fun removeVolumeListener(id: Double) {
+    volumeListeners.removeAll { it.id == id }
+  }
+
   override fun getSystemVolume(): Double {
     val current = am.getStreamVolume(SysAudioManager.STREAM_MUSIC)
     val max     = am.getStreamMaxVolume(SysAudioManager.STREAM_MUSIC)
     return if (max > 0) current.toDouble() / max.toDouble() else 0.0
   }
 
-  override fun activateIOS(): Promise<Unit> = Promise.async {}
-
-
-  override fun activateAndroid(): Promise<Unit> = Promise.async {
+  override fun activate(warningCallback: (AudioSessionWarning) -> Unit): Promise<Unit> = Promise.async {
       if (currentFocusRequest == null) {
 
         val attrs = AudioAttributes.Builder()
@@ -175,15 +192,17 @@ class AudioManager : HybridAudioManagerSpec() {
       }
   }
 
-  override fun deactivateAndroid(): Promise<Unit> = Promise.async {
+  override fun deactivate(
+    restorePreviousSessionOnDeactivation: Boolean,
+    fallbackToAmbientCategoryAndLeaveActiveForVolumeListener: Boolean,
+    warningCallback: (AudioSessionWarning
+    ) -> Unit): Promise<Unit> = Promise.async {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && currentFocusRequest != null) {
         am.abandonAudioFocusRequest(currentFocusRequest!!)
       } else {
         am.abandonAudioFocus(focusCallback)
       }
   }
-
-  override fun deactivateIOS(restorePreviousSessionOnDeactivation: Boolean): Promise<Unit> = Promise.async { }
 
   /**
    * Returns the buffer‑size / sample‑rate = seconds of latency per buffer.

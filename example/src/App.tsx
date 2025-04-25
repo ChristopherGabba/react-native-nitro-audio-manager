@@ -1,5 +1,5 @@
 // App.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -37,6 +37,8 @@ export default function App() {
   // simple pieces of state
 
   const [systemVolume, setSystemVolume] = useState<number>(getSystemVolume());
+  const [liveUpdateVolume, setLiveUpdateVolume] =
+    useState<number>(getSystemVolume());
   const [outLatency, setOutLatency] = useState<number>(getOutputLatency());
   const [inLatency, setInLatency] = useState<number>(getInputLatency());
   const [inRoutes, setInRoutes] = useState<string>();
@@ -47,10 +49,10 @@ export default function App() {
 
   const [lastFiveRouteChangeEvents, setLastFiveRouteChangeEvents] = useState<
     string[]
-  >(Array(5).fill(''));
+  >(['']);
   const [lastFiveInterruptionEvents, setLastFiveInterruptionEvents] = useState<
     string[]
-  >(Array(5).fill(''));
+  >(['']);
 
   const manageFiveMostRecentRouteChangeEvents = (event: string) => {
     setLastFiveRouteChangeEvents((events) => appendWithLimit(events, event, 5));
@@ -67,28 +69,31 @@ export default function App() {
     arr.map((r) => `${r.portType}:${r.uid}`).join('\n') || 'none';
 
   // attach a route‑change listener so we can update UI
+  const routeChangeEventCounter = useRef(1);
   useEffect(() => {
     const unsub = addListener('routeChange', (evt) => {
       manageFiveMostRecentRouteChangeEvents(
-        `${evt.reason}\noldDevice: ${routesToString(evt.prevRoute)}\nnewDevice: ${routesToString(evt.currentRoute)}`
+        `${routeChangeEventCounter.current}: ${evt.reason}\noldDevice: ${routesToString(evt.prevRoute)}\nnewDevice: ${routesToString(evt.currentRoute)}`
       );
+      routeChangeEventCounter.current++;
     });
     return unsub;
   }, []);
 
+  const audioInterruptionEventCounter = useRef(1);
   useEffect(() => {
     const unsub = addListener('audioInterruption', (evt) => {
       manageFiveMostRecentInterruptionEvents(
-        `Interruption ${evt.type}: ${evt.reason}`
+        `${audioInterruptionEventCounter.current}: Interruption ${evt.type}: ${evt.reason}`
       );
+      audioInterruptionEventCounter.current++;
     });
     return unsub;
   }, []);
 
   useEffect(() => {
-    console.log('Added');
     const unsub = addListener('volume', (volume) => {
-      console.log('Volume', volume);
+      setLiveUpdateVolume(volume);
     });
     return unsub;
   }, []);
@@ -123,7 +128,7 @@ export default function App() {
         </Text>
         <View style={styles.row}>
           <Button
-            title="Get System Volume"
+            title="Get System Volume Manually"
             onPress={() => {
               const volume = getSystemVolume();
               console.log('Got volume', volume);
@@ -132,15 +137,21 @@ export default function App() {
           />
           <Text style={styles.monospaced}>{systemVolume.toFixed(2)}</Text>
         </View>
+        <Text style={styles.testNote}>
+          Test #2: Raise volume up and down, this value should update
+          automatically.
+        </Text>
+        <Text style={styles.monospaced}>{liveUpdateVolume.toFixed(2)}</Text>
+
         <Text style={styles.heading}>Latency</Text>
         <Text style={styles.testNote}>
-          Test #2: Plug in wired headphones and check latencies.
+          Test #3: Plug in wired headphones and check latencies.
         </Text>
         <Text style={styles.testNote}>
-          Test #3: Plug in bluetooth headphones and check latencies.
+          Test #4: Plug in bluetooth headphones and check latencies.
         </Text>
         <Text style={styles.testNote}>
-          Test #4: Connect to car bluetooth like carplay and check latencies.
+          Test #5: Connect to car bluetooth like carplay and check latencies.
         </Text>
         <Text style={styles.testNote}>(Note: Returns -1 if unavailable)</Text>
         <View style={styles.row}>
@@ -220,6 +231,8 @@ export default function App() {
             onPress={async () => {
               if (isActivated) {
                 await deactivate({
+                  fallbackToAmbientCategoryAndLeaveActiveForVolumeListener:
+                    true,
                   restorePreviousSessionOnDeactivation: true,
                 });
               } else {
@@ -232,7 +245,12 @@ export default function App() {
             value={isActivated}
             onValueChange={async (v) => {
               if (v) await activate();
-              else await deactivate();
+              else
+                await deactivate({
+                  fallbackToAmbientCategoryAndLeaveActiveForVolumeListener:
+                    true,
+                  restorePreviousSessionOnDeactivation: true,
+                });
               setIsActivated(v);
             }}
           />

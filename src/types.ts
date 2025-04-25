@@ -460,8 +460,18 @@ export type DeactivationOptions = {
    */
   platform?: PlatformOptions;
   /**
+   * If by chance you are reliant (and using) the volume listener from `addListener('volume', ()=>{})`, and you call
+   * `deactivate`, your volume listener won't work anymore. This is because in order to actively track volume you need an active
+   * audio session. Setting this to true will skip the deactivation of the session, but then fallback to `Ambient` category
+   * @platform: `iOS`
+   * @default true
+   *
+   */
+  fallbackToAmbientCategoryAndLeaveActiveForVolumeListener?: boolean;
+  /**
    * Restores the previous AVAudioSession when this one ends. For example, if you are listening to music in the backgorund
    * and this audio session starts, it will pause the music. When you call `deactivate` it will play the music again.
+   * @platform: `iOS`
    * @default true
    */
   restorePreviousSessionOnDeactivation?: boolean;

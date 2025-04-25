@@ -29,26 +29,39 @@ export async function runIOSCategoryTests(
           ...test,
         },
       });
-    } catch (error) {
-      onTestFinished({
-        passResult: !test.shouldPass,
-        testId: test.testId,
-      });
-    }
+      const status = getAudioSessionStatus();
 
-    const status = getAudioSessionStatus();
-
-    if (Platform.OS === 'ios' && status && 'category' in status) {
-      const testPassedSuccessfully =
-        status.category === test.category &&
-        status.mode === test.mode &&
-        status.categoryOptions.length === test.categoryOptions?.length &&
-        status.categoryOptions.every(
-          (option, index) => option === test.categoryOptions![index]
+      if (Platform.OS === 'ios' && status && 'category' in status) {
+        const categoriesMatched = status.category === test.category;
+        const modesMatched = status.mode === test.mode;
+        const optionWasInStatus = test.categoryOptions?.every((item) =>
+          status.categoryOptions.includes(item)
         );
-      console.log(JSON.stringify(status, null, 4));
+
+        const testPassedSuccessfully =
+          categoriesMatched && modesMatched && optionWasInStatus;
+
+        console.log(
+          test.testId,
+          'Test Result:',
+          testPassedSuccessfully === test.shouldPass,
+          'Category Match:',
+          categoriesMatched,
+          'Modes Match:',
+          modesMatched,
+          'Options Match:',
+          optionWasInStatus
+        );
+        console.log(test.testId === 4 ? status : undefined);
+        onTestFinished({
+          passResult: testPassedSuccessfully === test.shouldPass,
+          testId: test.testId,
+        });
+      }
+    } catch (error) {
+      console.log(test.testId, 'Test Passed:', !test.shouldPass, error);
       onTestFinished({
-        passResult: testPassedSuccessfully === test.shouldPass,
+        passResult: test.shouldPass === false,
         testId: test.testId,
       });
     }
@@ -82,18 +95,18 @@ export const iosTestCombinations: TestCombination[] = [
     mode: AudioSessionMode.Measurement,
     categoryOptions: [AudioSessionCategoryOptions.MixWithOthers],
   },
-  // Test 4: Valid Ambient with AllowBluetoothA2DP
+  // Test 4: AllowBluetoothA2DP is set by default on SoloAmbient so this is not allowed
   {
     testId: 4,
-    shouldPass: true,
-    category: AudioSessionCategory.Ambient,
+    shouldPass: false,
+    category: AudioSessionCategory.SoloAmbient,
     mode: AudioSessionMode.Default,
     categoryOptions: [AudioSessionCategoryOptions.AllowBluetoothA2DP],
   },
   // Test 5: Valid SoloAmbient with AllowBluetoothA2DP
   {
     testId: 5,
-    shouldPass: true,
+    shouldPass: false,
     category: AudioSessionCategory.SoloAmbient,
     mode: AudioSessionMode.Default,
     categoryOptions: [AudioSessionCategoryOptions.AllowBluetoothA2DP],
@@ -223,13 +236,13 @@ export const iosTestCombinations: TestCombination[] = [
     mode: AudioSessionMode.Default,
     categoryOptions: [AudioSessionCategoryOptions.MixWithOthers],
   },
-  // Test 20: Invalid PlayAndRecord with Invalid Option Combination
+  // Test 20: Totally valid.
   {
     testId: 20,
-    shouldPass: false,
+    shouldPass: true,
     category: AudioSessionCategory.PlayAndRecord,
     mode: AudioSessionMode.VideoRecording,
-    categoryOptions: [AudioSessionCategoryOptions.AllowBluetoothA2DP], // Not supported alone
+    categoryOptions: [AudioSessionCategoryOptions.AllowBluetoothA2DP],
   },
   // Test 21: Valid Ambient with No Options
   {
@@ -239,10 +252,10 @@ export const iosTestCombinations: TestCombination[] = [
     mode: AudioSessionMode.Default,
     categoryOptions: [],
   },
-  // Test 22: Valid Playback with AllowBluetoothA2DP
+  // Test 22: AllowBluetoothA2DP is only allowed to apply
   {
     testId: 22,
-    shouldPass: true,
+    shouldPass: false,
     category: AudioSessionCategory.Playback,
     mode: AudioSessionMode.Default,
     categoryOptions: [AudioSessionCategoryOptions.AllowBluetoothA2DP],

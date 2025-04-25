@@ -13,15 +13,13 @@ struct Listener<T> {
 }
 
 enum AudioSessionError: Error {
-  case invalidCategory(name: String, message: String)
-  case invalidMode(name: String, message: String)
-  case invalidCategoryOption(name: String, message: String)
-  case invalidConfiguration(name: String, message: String)
-  case preferenceFailure(name: String, message: String)
+  case error(name: String, message: String)
 }
 
 @objcMembers
 class AudioManager: HybridAudioManagerSpec {
+
+  // MARK: Initializations
 
   private var interruptionListeners: [Listener<InterruptionListener>] = []
   private var routeChangeListeners: [Listener<RouteChangeListener>] = []
@@ -29,8 +27,11 @@ class AudioManager: HybridAudioManagerSpec {
   private var nextListenerId: Double = 0
 
   private let audioSession = AVAudioSession.sharedInstance()
+  private var isSessionActive = false
 
   private var volumeObservation: NSKeyValueObservation?
+
+  // MARK: Listeners
 
   override init() {
     super.init()
@@ -138,7 +139,7 @@ class AudioManager: HybridAudioManagerSpec {
     return listener.id
   }
 
-  func removeInterruptionListeners(id: Double) throws {
+  func removeInterruptionListener(id: Double) throws {
     interruptionListeners.removeAll { $0.id == id }
   }
 
@@ -149,13 +150,16 @@ class AudioManager: HybridAudioManagerSpec {
     return listener.id
   }
 
-  func removeRouteChangeListeners(id: Double) throws {
+  func removeRouteChangeListener(id: Double) throws {
     routeChangeListeners.removeAll { $0.id == id }
   }
 
   func addVolumeListener(callback: @escaping VolumeListener) throws -> Double {
-    try? audioSession.setCategory(.ambient)
-    try? audioSession.setActive(true)
+    if !isSessionActive {
+      try? audioSession.setCategory(.ambient)
+      try? audioSession.setActive(true)
+      isSessionActive = true
+    }
 
     let listener = Listener(id: nextListenerId, callback: callback)
     volumeListeners.append(listener)
@@ -176,12 +180,14 @@ class AudioManager: HybridAudioManagerSpec {
 
   func removeVolumeListener(id: Double) throws {
     volumeListeners.removeAll { $0.id == id }
-    
+
     if volumeListeners.isEmpty {
       volumeObservation?.invalidate()
       volumeObservation = nil
     }
   }
+
+  // MARK: Methods
 
   public func isWiredHeadphonesConnected() -> Bool {
     return audioSession.currentRoute.outputs.contains {
@@ -196,34 +202,12 @@ class AudioManager: HybridAudioManagerSpec {
     }
   }
 
-  private func serializePort(_ port: AVAudioSessionPortDescription) -> PortDescription {
-    let portName = port.portName
-    let portType = readablePortType(for: port.portType)
-    let uid = port.uid
-
-    let channels: [Double]? = port.channels?.map { Double($0.channelNumber) }
-
-    let selectedDataSourceId: String? = {
-      if let dataSourceID = port.selectedDataSource?.dataSourceID {
-        return dataSourceID.stringValue
-      }
-      return nil
-    }()
-
-    let isDataSourceSupported = port.dataSources != nil
-
-    return PortDescription(
-      portName: portName,
-      portType: portType,
-      uid: uid,
-      channels: channels,
-      isDataSourceSupported: isDataSourceSupported,
-      selectedDataSourceId: selectedDataSourceId
-    )
-  }
-
   public func getSystemVolume() throws -> Double {
     return Double(audioSession.outputVolume)
+  }
+
+  public func isActive() throws -> Bool {
+    return isSessionActive
   }
 
   public func getInputLatency() throws -> Double {
@@ -247,16 +231,22 @@ class AudioManager: HybridAudioManagerSpec {
     return audioSession.currentRoute.outputs.map(serializePort)
   }
 
-  public func forceOutputToSpeaker() throws {
+  public func forceOutputToSpeaker(warningCallback: @escaping WarningCallback) throws {
     if audioSession.category != .playAndRecord {
-      try audioSession.setCategory(.playAndRecord, mode: .default, options: [])
+      warningCallback(
+        AudioSessionWarning(
+          name: "INCOMPATIBLE_CATEGORY",
+          message: "Forcing output to speaker is only possible with category 'PlayAndRecord'"
+        ))
+      return
     }
 
     do {
       try audioSession.overrideOutputAudioPort(.speaker)
     } catch {
-      throw RuntimeError.error(
-        withMessage: "Failed to force output to speaker: \(error.localizedDescription)"
+      throw AudioSessionError.error(
+        name: "SPEAKER_OVERRIDE_FAILURE",
+        message: "Failed to force output to speaker with: \(error.localizedDescription)"
       )
     }
   }
@@ -265,48 +255,86 @@ class AudioManager: HybridAudioManagerSpec {
     do {
       try audioSession.overrideOutputAudioPort(.none)
     } catch {
-      throw RuntimeError.error(
-        withMessage: "Failed to cancel speaker override: \(error.localizedDescription)"
+      throw AudioSessionError.error(
+        name: "SPEAKER_OVERRIDE_CANCELLATION_FAILURE",
+        message: "Failed to cancel speaker output with error: \(error.localizedDescription)"
       )
     }
   }
 
-  public func activateIOS() throws -> Promise<Void> {
+  public func activate(warningCallback: @escaping WarningCallback) throws -> Promise<Void> {
     return Promise.async {
       do {
-        try self.audioSession.setActive(true)
+        if !self.isSessionActive {
+          try self.audioSession.setActive(true)
+          self.isSessionActive = true
+        } else {
+          warningCallback(
+            AudioSessionWarning(
+              name: "MULTIPLE_ACTIVATION_WARNING",
+              message:
+                "Activation function called while the session was already active. Did you mean to do this?"
+            ))
+        }
+
       } catch {
-        throw RuntimeError.error(withMessage: "Failed to activate audio session")
+        throw AudioSessionError.error(
+          name: "ACTIVATION_FAILURE",
+          message: "Failed to activate audio session with error: \(error.localizedDescription)"
+        )
       }
     }
   }
 
-  public func activateAndroid() throws -> Promise<Void> {
-    return Promise.async {
-      // no-op
-    }
-  }
+  public func deactivate(
+    restorePreviousSessionOnDeactivation: Bool,
+    fallbackToAmbientCategoryAndLeaveActiveForVolumeListener: Bool,
+    warningCallback: @escaping WarningCallback
+  ) throws -> Promise<Void> {
 
-  public func deactivateIOS(restorePreviousSessionOnDeactivation: Bool) throws -> Promise<Void> {
-    var options: AVAudioSession.SetActiveOptions = []
+    if fallbackToAmbientCategoryAndLeaveActiveForVolumeListener {
+      return Promise.async {
+        do {
+          try self.audioSession.setCategory(
+            .ambient, mode: .default, policy: .default, options: [.mixWithOthers])
+        } catch {
+          throw AudioSessionError.error(
+            name: "DEACTIVATION_ERROR",
+            message: "Failed to set AudioSession category to Ambient: \(error.localizedDescription)"
+          )
+        }
+      }
+    } else {
+      var options: AVAudioSession.SetActiveOptions = []
 
-    if restorePreviousSessionOnDeactivation {
-      options.insert(.notifyOthersOnDeactivation)
-    }
+      if restorePreviousSessionOnDeactivation {
+        options.insert(.notifyOthersOnDeactivation)
+      }
 
-    return Promise.async {
-      do {
-        try self.audioSession.setActive(false, options: options)
-      } catch {
-        throw RuntimeError.error(withMessage: "Failed to deactivate audio session")
+      return Promise.async {
+        do {
+          if self.isSessionActive {
+            try self.audioSession.setActive(false, options: options)
+            self.isSessionActive = false
+
+          } else {
+            warningCallback(
+              AudioSessionWarning(
+                name: "MULTIPLE_DEACTIVATION_WARNING",
+                message:
+                  "Deactivation function called while the session was already inactivate. Did you mean to do this?"
+              ))
+          }
+
+        } catch {
+          throw AudioSessionError.error(
+            name: "DEACTIVATION_FAILURE",
+            message: "Failed to deactivate audio session with error: \(error.localizedDescription)"
+          )
+        }
       }
     }
-  }
 
-  public func deactivateAndroid() throws -> Promise<Void> {
-    return Promise.async {
-      // no-op
-    }
   }
 
   public func getAudioManagerStatusAndroid() -> AudioManagerStatus? {
@@ -370,9 +398,6 @@ class AudioManager: HybridAudioManagerSpec {
     warningCallback: @escaping WarningCallback
   ) throws {
 
-    audioSession
-
-    // MARK: - Map category
     let category: AVAudioSession.Category = try {
       switch categoryName {
       case "Ambient": return .ambient
@@ -382,7 +407,7 @@ class AudioManager: HybridAudioManagerSpec {
       case "PlayAndRecord": return .playAndRecord
       case "MultiRoute": return .multiRoute
       default:
-        throw AudioSessionError.invalidCategory(
+        throw AudioSessionError.error(
           name: "INVALID_CATEGORY",
           message: "Unknown category: \(categoryName)"
         )
@@ -400,7 +425,7 @@ class AudioManager: HybridAudioManagerSpec {
       case "MoviePlayback": return .moviePlayback
       case "SpokenAudio": return .spokenAudio
       default:
-        throw AudioSessionError.invalidMode(
+        throw AudioSessionError.error(
           name: "INVALID_MODE",
           message: "Unknown mode: \(modeName)"
         )
@@ -424,7 +449,7 @@ class AudioManager: HybridAudioManagerSpec {
           category == .playAndRecord || category == .playback || category == .multiRoute
             || category == .ambient
         else {
-          throw AudioSessionError.invalidCategoryOption(
+          throw AudioSessionError.error(
             name: "UNSUPPORTED_CATEGORY_OPTION",
             message: "MixWithOthers is not supported for category \(categoryName)"
           )
@@ -432,26 +457,34 @@ class AudioManager: HybridAudioManagerSpec {
         options.insert(.mixWithOthers)
       case "AllowBluetooth":
         guard category == .playAndRecord || category == .record else {
-          throw AudioSessionError.invalidCategoryOption(
+          throw AudioSessionError.error(
             name: "UNSUPPORTED_CATEGORY_OPTION",
             message: "AllowBluetooth is not supported for category \(categoryName)"
           )
         }
         options.insert(.allowBluetooth)
       case "AllowBluetoothA2DP":
-        guard
-          category == .playAndRecord || category == .playback || category == .soloAmbient
-            || category == .ambient
-        else {
-          throw AudioSessionError.invalidCategoryOption(
+        if category == .playAndRecord {
+          options.insert(.allowBluetoothA2DP)
+        } else if category == .playback || category == .soloAmbient
+          || category == .ambient
+        {
+          warningCallback(
+            AudioSessionWarning(
+              name: "OPTION_NOT_APPLIED",
+              message:
+                "AllowBluetoothA2DP is applied by default for category \(categoryName)."
+            ))
+        } else {
+          throw AudioSessionError.error(
             name: "UNSUPPORTED_CATEGORY_OPTION",
             message: "AllowBluetoothA2DP is not supported for category \(categoryName)"
           )
         }
-        options.insert(.allowBluetoothA2DP)
+
       case "AllowAirPlay":
         guard category == .playAndRecord else {
-          throw AudioSessionError.invalidCategoryOption(
+          throw AudioSessionError.error(
             name: "UNSUPPORTED_CATEGORY_OPTION",
             message: "AllowAirPlay is not supported for category \(categoryName)"
           )
@@ -459,7 +492,7 @@ class AudioManager: HybridAudioManagerSpec {
         options.insert(.allowAirPlay)
       case "DuckOthers":
         guard category == .playAndRecord || category == .playback || category == .multiRoute else {
-          throw AudioSessionError.invalidCategoryOption(
+          throw AudioSessionError.error(
             name: "UNSUPPORTED_CATEGORY_OPTION",
             message: "DuckOthers is not supported for category \(categoryName)"
           )
@@ -467,7 +500,7 @@ class AudioManager: HybridAudioManagerSpec {
         options.insert(.duckOthers)
       case "DefaultToSpeaker":
         guard category == .playAndRecord else {
-          throw AudioSessionError.invalidCategoryOption(
+          throw AudioSessionError.error(
             name: "UNSUPPORTED_CATEGORY_OPTION",
             message: "DefaultToSpeaker is not supported for category \(categoryName)"
           )
@@ -475,7 +508,7 @@ class AudioManager: HybridAudioManagerSpec {
         options.insert(.defaultToSpeaker)
       case "InterruptSpokenAudioAndMixWithOthers":
         guard category == .playAndRecord || category == .playback || category == .multiRoute else {
-          throw AudioSessionError.invalidCategoryOption(
+          throw AudioSessionError.error(
             name: "UNSUPPORTED_CATEGORY_OPTION",
             message:
               "InterruptSpokenAudioAndMixWithOthers is not supported for category \(categoryName)"
@@ -484,7 +517,7 @@ class AudioManager: HybridAudioManagerSpec {
         options.insert(.interruptSpokenAudioAndMixWithOthers)
       case "OverrideMutedMicrophoneInterruption":
         guard #available(iOS 16.0, *), category == .playAndRecord || category == .record else {
-          throw AudioSessionError.invalidCategoryOption(
+          throw AudioSessionError.error(
             name: "UNSUPPORTED_CATEGORY_OPTION",
             message:
               "OverrideMutedMicrophoneInterruption requires iOS 16.0+ and category PlayAndRecord or Record."
@@ -492,14 +525,13 @@ class AudioManager: HybridAudioManagerSpec {
         }
         options.insert(.overrideMutedMicrophoneInterruption)
       default:
-        throw AudioSessionError.invalidCategoryOption(
+        throw AudioSessionError.error(
           name: "INVALID_CATEGORY_OPTION",
           message: "Unknown category option: \(optionName)"
         )
       }
     }
 
-    // MARK: - Set Category
     do {
       if let mode = mode {
         if !options.isEmpty {
@@ -515,13 +547,12 @@ class AudioManager: HybridAudioManagerSpec {
         }
       }
     } catch {
-      throw AudioSessionError.invalidConfiguration(
+      throw AudioSessionError.error(
         name: "INVALID_CONFIGURATION",
         message: "Failed to set category: \(error.localizedDescription)"
       )
     }
 
-    // MARK: - Additional Preferences
     do {
       try audioSession.setPrefersNoInterruptionsFromSystemAlerts(
         prefersNoInterruptionFromSystemAlerts)
@@ -627,7 +658,33 @@ class AudioManager: HybridAudioManagerSpec {
     // no-op
   }
 
-  // MARK - UTILS
+  // MARK: - UTILS
+  private func serializePort(_ port: AVAudioSessionPortDescription) -> PortDescription {
+    let portName = port.portName
+    let portType = readablePortType(for: port.portType)
+    let uid = port.uid
+
+    let channels: [Double]? = port.channels?.map { Double($0.channelNumber) }
+
+    let selectedDataSourceId: String? = {
+      if let dataSourceID = port.selectedDataSource?.dataSourceID {
+        return dataSourceID.stringValue
+      }
+      return nil
+    }()
+
+    let isDataSourceSupported = port.dataSources != nil
+
+    return PortDescription(
+      portName: portName,
+      portType: portType,
+      uid: uid,
+      channels: channels,
+      isDataSourceSupported: isDataSourceSupported,
+      selectedDataSourceId: selectedDataSourceId
+    )
+  }
+
   private func readableInterruptionReason(_ reason: AVAudioSession.InterruptionReason?)
     -> InterruptionReason
   {
