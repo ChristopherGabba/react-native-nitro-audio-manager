@@ -251,14 +251,8 @@ class AudioManager : HybridAudioManagerSpec() {
     )
   }
 
-  override fun getAvailableInputs(): Array<PortDescription> {
-
-    val inputs: Array<AudioDeviceInfo> =
-      am.getDevices(SysAudioManager.GET_DEVICES_INPUTS)
-
-    return inputs
-      .map { device -> mapToPort(device) }
-      .toTypedArray()
+  override fun getCategoryCompatibleInputs(): Array<PortDescription> {
+    // no op
   }
 
   override fun getCurrentInputRoutes(): Array<PortDescription> {
@@ -426,7 +420,8 @@ class AudioManager : HybridAudioManagerSpec() {
     prefersNoInterruptionFromSystemAlerts: Boolean,
     prefersInterruptionOnRouteDisconnect: Boolean,
     allowHapticsAndSystemSoundsDuringRecording: Boolean,
-    prefersEchoCancelledInput: Boolean
+    prefersEchoCancelledInput: Boolean,
+    warningCallback: (AudioSessionWarning) -> Unit
   ) {
     // no-op
   }

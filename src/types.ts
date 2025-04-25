@@ -290,6 +290,17 @@ export const AudioSessionRouteSharingPolicy = {
   Independent: 'Independent',
 } as const;
 
+export interface AudioSessionWarning {
+  name: string;
+  message: string;
+}
+
+// Error type (matches AudioSessionError in Swift)
+export interface AudioSessionError extends Error {
+  name: string;
+  message: string;
+}
+
 export type AudioSessionRouteSharingPolicy =
   (typeof AudioSessionRouteSharingPolicy)[keyof typeof AudioSessionRouteSharingPolicy];
 
@@ -391,7 +402,8 @@ export type AudioSessionCompatibleModes = {
     | 'VoiceChat'
     | 'VideoChat'
     | 'GameChat'
-    | 'VideoRecording';
+    | 'VideoRecording'
+    | 'VoicePrompt';
   MultiRoute: 'Default' | 'SpokenAudio';
 };
 
@@ -434,7 +446,10 @@ export type AudioSessionStatus = {
   prefersInterruptionOnRouteDisconnect: boolean;
   isEchoCancelledInputEnabled: boolean;
   isEchoCancelledInputAvailable: boolean;
+  prefersEchoCancelledInput: boolean;
 };
+
+export type PlatformOptions = 'ios' | 'android' | 'both';
 
 export type DeactivationOptions = {
   /**
@@ -443,7 +458,7 @@ export type DeactivationOptions = {
    * - `android`: only call the Android activate API
    * - `both` (default): call both
    */
-  platform?: 'ios' | 'android' | 'both';
+  platform?: PlatformOptions;
   /**
    * Restores the previous AVAudioSession when this one ends. For example, if you are listening to music in the backgorund
    * and this audio session starts, it will pause the music. When you call `deactivate` it will play the music again.
@@ -459,7 +474,7 @@ export type ActivationOptions = {
    * - `android`: only call the Android activate API
    * - `both` (default): call both
    */
-  platform?: 'ios' | 'android' | 'both';
+  platform?: PlatformOptions;
 };
 
 export type RouteChangeReason =
@@ -494,6 +509,7 @@ export interface InterruptionEvent {
 export type ListenerEvent = {
   audioInterruption: InterruptionEvent;
   routeChange: RouteChangeEvent;
+  volume: number;
 };
 
 export type ListenerType = keyof ListenerEvent;

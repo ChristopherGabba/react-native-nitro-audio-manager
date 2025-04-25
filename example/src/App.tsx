@@ -10,12 +10,11 @@ import {
   Switch,
   Platform,
 } from 'react-native';
-
+import * as Device from 'expo-device';
 import {
   getSystemVolume,
   getOutputLatency,
   getInputLatency,
-  getAvailableInputs,
   getCurrentInputRoutes,
   getCurrentOutputRoutes,
   forceOutputToSpeaker,
@@ -23,100 +22,191 @@ import {
   activate,
   deactivate,
   getAudioSessionStatus,
-  configureAudioAndActivate,
   addListener,
   useIsHeadphonesConnected,
-  AudioSessionCategory,
-  AudioSessionMode,
-  AudioSessionRouteSharingPolicy,
-  AudioContentTypes,
-  AudioFocusGainTypes,
-  AudioUsages,
+  PortDescription,
 } from 'react-native-audio-manager';
+import { appendWithLimit } from './utils';
+import {
+  iosTestCombinations,
+  runIOSCategoryTests,
+  TestResult,
+} from './iosCombinations';
 
 export default function App() {
   // simple pieces of state
-  const [systemVolume, setSystemVolume] = useState<number>(0);
-  const [outLatency, setOutLatency] = useState<number>(0);
-  const [inLatency, setInLatency] = useState<number>(0);
-  const [inputs, setInputs] = useState<any[]>([]);
-  const [inRoutes, setInRoutes] = useState<any[]>([]);
-  const [outRoutes, setOutRoutes] = useState<any[]>([]);
+
+  const [systemVolume, setSystemVolume] = useState<number>(getSystemVolume());
+  const [outLatency, setOutLatency] = useState<number>(getOutputLatency());
+  const [inLatency, setInLatency] = useState<number>(getInputLatency());
+  const [inRoutes, setInRoutes] = useState<string>();
+  const [outRoutes, setOutRoutes] = useState<any>();
   const [sessionStatus, setSessionStatus] = useState<any>(null);
   const { wired, wireless } = useIsHeadphonesConnected();
   const [isActivated, setIsActivated] = useState(false);
-  const [lastEvent, setLastEvent] = useState<string>('–');
+
+  const [lastFiveRouteChangeEvents, setLastFiveRouteChangeEvents] = useState<
+    string[]
+  >(Array(5).fill(''));
+  const [lastFiveInterruptionEvents, setLastFiveInterruptionEvents] = useState<
+    string[]
+  >(Array(5).fill(''));
+
+  const manageFiveMostRecentRouteChangeEvents = (event: string) => {
+    setLastFiveRouteChangeEvents((events) => appendWithLimit(events, event, 5));
+  };
+
+  const manageFiveMostRecentInterruptionEvents = (event: string) => {
+    setLastFiveInterruptionEvents((events) =>
+      appendWithLimit(events, event, 5)
+    );
+  };
 
   // helper to pretty‑print routes
-  const routesToString = (arr: any[]) =>
+  const routesToString = (arr: PortDescription[]) =>
     arr.map((r) => `${r.portType}:${r.uid}`).join('\n') || 'none';
 
   // attach a route‑change listener so we can update UI
   useEffect(() => {
     const unsub = addListener('routeChange', (evt) => {
-      console.log(`routeChange: ${evt.reason}`);
-      setLastEvent(`routeChange: ${evt.reason}`);
-      setInRoutes(getCurrentInputRoutes());
-      setOutRoutes(getCurrentOutputRoutes());
+      manageFiveMostRecentRouteChangeEvents(
+        `${evt.reason}\noldDevice: ${routesToString(evt.prevRoute)}\nnewDevice: ${routesToString(evt.currentRoute)}`
+      );
     });
     return unsub;
   }, []);
 
   useEffect(() => {
     const unsub = addListener('audioInterruption', (evt) => {
-      setLastEvent(`audioInterruption: ${evt.reason}`);
+      manageFiveMostRecentInterruptionEvents(
+        `Interruption ${evt.type}: ${evt.reason}`
+      );
     });
     return unsub;
   }, []);
 
+  useEffect(() => {
+    console.log('Added');
+    const unsub = addListener('volume', (volume) => {
+      console.log('Volume', volume);
+    });
+    return unsub;
+  }, []);
+
+  const [testResults, setTestResults] = useState<string[]>([]);
+  const addToTestArray = (result: TestResult) => {
+    setTestResults((existing) => {
+      return [
+        ...existing,
+        `Test ${result.testId}: ${result.passResult ? '✅' : '❌'}`,
+      ];
+    });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.inner}>
-        <Text style={styles.heading}>System Metrics</Text>
-        <View style={styles.row}>
-          <Button
-            title="Get Volume"
-            onPress={() => setSystemVolume(getSystemVolume())}
-          />
-          <Text style={styles.value}>{systemVolume.toFixed(2)}</Text>
-        </View>
-        <View style={styles.row}>
-          <Button
-            title="Get Out Latency"
-            onPress={() => setOutLatency(getOutputLatency())}
-          />
-          <Text style={styles.value}>{outLatency} ms</Text>
-        </View>
-        <View style={styles.row}>
-          <Button
-            title="Get In Latency"
-            onPress={() => setInLatency(getInputLatency())}
-          />
-          <Text style={styles.value}>{inLatency} ms</Text>
-        </View>
-        <View style={styles.row}>
-          <Button
-            title="List Inputs"
-            onPress={() => setInputs(getAvailableInputs())}
-          />
-          <Text style={styles.value}>{inputs.length} ports</Text>
-        </View>
+        <Text style={styles.title}>Audio Manager Example App:</Text>
 
-        <Text style={styles.heading}>Audio Routes</Text>
+        <Text style={styles.heading}>Device Info:</Text>
+        <Text style={styles.testNote}>
+          Audio Control Can Vary by System Version and Phone Model
+        </Text>
+        <Text style={styles.monospaced}>
+          Model: {Device.manufacturer}: {Device.modelName}
+        </Text>
+        <Text style={styles.monospaced}>Sys Version: {Device.osVersion}</Text>
+        <Text style={styles.heading}>Volume</Text>
+        <Text style={styles.testNote}>
+          Test #1: Raise volume up and down on side of phone and tap button to
+          check value.
+        </Text>
         <View style={styles.row}>
           <Button
-            title="Refresh Routes"
+            title="Get System Volume"
             onPress={() => {
-              setInRoutes(getCurrentInputRoutes());
-              setOutRoutes(getCurrentOutputRoutes());
+              const volume = getSystemVolume();
+              console.log('Got volume', volume);
+              setSystemVolume(volume);
             }}
           />
+          <Text style={styles.monospaced}>{systemVolume.toFixed(2)}</Text>
         </View>
-        <Text style={styles.subheading}>Inputs</Text>
-        <Text style={styles.monospaced}>{routesToString(inRoutes)}</Text>
-        <Text style={styles.subheading}>Outputs</Text>
-        <Text style={styles.monospaced}>{routesToString(outRoutes)}</Text>
+        <Text style={styles.heading}>Latency</Text>
+        <Text style={styles.testNote}>
+          Test #2: Plug in wired headphones and check latencies.
+        </Text>
+        <Text style={styles.testNote}>
+          Test #3: Plug in bluetooth headphones and check latencies.
+        </Text>
+        <Text style={styles.testNote}>
+          Test #4: Connect to car bluetooth like carplay and check latencies.
+        </Text>
+        <Text style={styles.testNote}>(Note: Returns -1 if unavailable)</Text>
+        <View style={styles.row}>
+          <Button
+            title="Get Output Latency"
+            onPress={() => setOutLatency(getOutputLatency())}
+          />
+          <Text style={styles.monospaced}>{outLatency.toFixed(4)} ms</Text>
+        </View>
+        <View style={styles.row}>
+          <Button
+            title="Get Input Latency"
+            onPress={() => setInLatency(getInputLatency())}
+          />
+          <Text style={styles.monospaced}>{inLatency} ms</Text>
+        </View>
+        <Text style={styles.heading}>Audio Inputs / Outputs</Text>
+        <Text style={styles.testNote}>
+          Test #5: Connect headphones and tap "List Inputs" and "List Outputs".
+          Should go up to 2.
+        </Text>
+        <Button
+          title="Refresh Input / Outputs"
+          onPress={() => {
+            setInRoutes(routesToString(getCurrentInputRoutes()));
+            setOutRoutes(routesToString(getCurrentOutputRoutes()));
+          }}
+        />
+        <Text style={styles.value}>Inputs</Text>
+        <Text style={styles.monospaced}>{inRoutes}</Text>
+        <Text style={styles.value}>{inRoutes?.length ?? 0} ports</Text>
+        <Text style={styles.value}>Outupts</Text>
+        <Text style={styles.monospaced}>{outRoutes}</Text>
+        <Text style={styles.value}>{inRoutes?.length ?? 0} ports</Text>
+        <Text style={styles.heading}>Headphones Connected & Events</Text>
+        <Text style={styles.testNote}>
+          Test Method: Unplug / plug in headphones (wired, bluetooth, etc.)
+        </Text>
+        {lastFiveRouteChangeEvents.map((event, index) => {
+          return (
+            <Text style={styles.monospaced} key={`rce_${index}`}>
+              {event}
+            </Text>
+          );
+        })}
+        <View style={styles.row}>
+          <Text style={styles.monospaced}>
+            Wired: {wired ? 'TRUE' : 'FALSE'}
+          </Text>
+          <Text style={styles.monospaced}>
+            Wireless: {wireless ? 'TRUE' : 'FALSE'}
+          </Text>
+        </View>
 
+        <Text style={styles.heading}>Audio Interruption Events</Text>
+        <Text style={styles.testNote}>Requires active audio session</Text>
+        <Text style={styles.testNote}>
+          Test Method: Receive incomming call?
+        </Text>
+        {lastFiveInterruptionEvents.map((event, index) => {
+          return (
+            <Text style={styles.monospaced} key={`rce_${index}`}>
+              {event}
+            </Text>
+          );
+        })}
         <Text style={styles.heading}>Speaker Routing</Text>
         <View style={styles.row}>
           <Button title="Force to Speaker" onPress={forceOutputToSpeaker} />
@@ -159,31 +249,22 @@ export default function App() {
             : 'no status yet'}
         </Text>
         <Button
-          title="Configure Play & Record"
-          onPress={() =>
-            configureAudioAndActivate({
-              ios: {
-                category: AudioSessionCategory.PlayAndRecord,
-                mode: AudioSessionMode.Default,
-                policy: AudioSessionRouteSharingPolicy.Default,
-              },
-              android: {
-                focusGain: AudioFocusGainTypes.GainTransient,
-                contentType: AudioContentTypes.Movie,
-                usage: AudioUsages.Media,
-                acceptsDelayedFocusGain: true,
-                willPauseWhenDucked: false,
-              },
-            })
-          }
+          title="Run Category Tests"
+          onPress={() => {
+            console.log('Ran');
+            setTestResults([]);
+            runIOSCategoryTests(iosTestCombinations, (result) => {
+              addToTestArray(result);
+            });
+          }}
         />
-
-        <Text style={styles.heading}>Headphones Connected</Text>
-        <Text style={styles.value}>Wired: {wired ? 'yes' : 'no'}</Text>
-        <Text style={styles.value}>Wireless: {wireless ? 'yes' : 'no'}</Text>
-
-        <Text style={styles.heading}>Last Event</Text>
-        <Text style={styles.monospaced}>{lastEvent}</Text>
+        {testResults.map((result, index) => {
+          return (
+            <Text style={styles.monospaced} key={`result_${index}`}>
+              {result}
+            </Text>
+          );
+        })}
       </ScrollView>
     </SafeAreaView>
   );
@@ -192,9 +273,19 @@ export default function App() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f7f7f7' },
   inner: { padding: 16 },
+  title: { fontSize: 20, fontWeight: '600', textAlign: 'center' },
   heading: { fontSize: 18, fontWeight: '600', marginTop: 24 },
-  subheading: { fontSize: 14, fontWeight: '500', marginTop: 12 },
-  row: { flexDirection: 'row', alignItems: 'center', marginTop: 12 },
+  testNote: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginTop: 5,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    justifyContent: 'space-between',
+  },
   value: { marginLeft: 12, flex: 1 },
   monospaced: {
     fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace' }),

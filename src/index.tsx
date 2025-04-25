@@ -33,7 +33,7 @@ const AudioManagerHybridObject =
 /**
  * Returns the current system volume:
  * - **iOS:** a single number in the range [0–1]
- * - **Android:** an object `{ music, ring, alarm, … }` each in [0–1]
+ * - **Android:** the music stream volume in the range [0–1]
  * - **other platforms:** `undefined`
  */
 export function getSystemVolume(): number {
@@ -55,14 +55,22 @@ export function getInputLatency(): number {
 }
 
 /**
- * Returns an array of available inputs.
+ * @platform
+ * **IOS** only
+ * The active audio session category and mode determine the number of inputs this property returns.
+ * For example, if the session’s category is playAndRecord, the array may contain a built-in microphone port and,
+ * if connected, a headset microphone port. Alternatively, if the session’s category is playback, this property returns an empty array.
  */
-export function getAvailableInputs(): PortDescription[] {
-  return AudioManagerHybridObject.getAvailableInputs();
+export function getCategoryCompatibleInputs(): PortDescription[] | undefined {
+  if (Platform.OS === 'ios') {
+    return AudioManagerHybridObject.getCategoryCompatibleInputs();
+  } else {
+    return undefined;
+  }
 }
 
 /**
- * Returns an array of the current input routes.
+ * Returns an array of the currently connected input routes.
  */
 export function getCurrentInputRoutes(): PortDescription[] {
   return AudioManagerHybridObject.getCurrentInputRoutes();
@@ -177,11 +185,12 @@ type StatusResult = AudioSessionStatus | AudioManagerStatus | undefined;
  * @returns {AudioSessionStatus} A promise that resolves with the audio session status.
  */
 export function getAudioSessionStatus(): StatusResult {
-  return Platform.select<StatusResult>({
-    ios: AudioManagerHybridObject.getAudioSessionStatusIOS(),
-    android: AudioManagerHybridObject.getAudioManagerStatusAndroid(),
-    default: undefined,
-  });
+  if (Platform.OS === 'ios') {
+    return AudioManagerHybridObject.getAudioSessionStatusIOS() as AudioSessionStatus;
+  } else if (Platform.OS === 'android') {
+    return AudioManagerHybridObject.getAudioManagerStatusAndroid() as AudioManagerStatus;
+  }
+  return undefined;
 }
 
 /**
@@ -189,7 +198,7 @@ export function getAudioSessionStatus(): StatusResult {
  * On iOS this calls configureAudioSession(...) then activate().
  * On Android this calls configureAudioManager(...) then activate().
  */
-export async function configureAudioAndActivate<
+export async function configureAudio<
   T extends AudioSessionCategory,
   M extends AudioSessionCompatibleModes[T],
   N extends AudioSessionCompatibleCategoryOptions[T],
@@ -200,10 +209,10 @@ export async function configureAudioAndActivate<
       mode,
       policy = AudioSessionRouteSharingPolicy.Default,
       categoryOptions = [],
-      prefersNoInterruptionFromSystemAlerts = true,
-      prefersInterruptionOnRouteDisconnect = true,
-      allowHapticsAndSystemSoundsDuringRecording = true,
-      prefersEchoCancelledInput = true,
+      prefersNoInterruptionFromSystemAlerts = false,
+      prefersInterruptionOnRouteDisconnect = false,
+      allowHapticsAndSystemSoundsDuringRecording = false,
+      prefersEchoCancelledInput = false,
     } = params.ios;
 
     // 1) configure iOS audio session
@@ -215,7 +224,10 @@ export async function configureAudioAndActivate<
       prefersNoInterruptionFromSystemAlerts,
       prefersInterruptionOnRouteDisconnect,
       allowHapticsAndSystemSoundsDuringRecording,
-      prefersEchoCancelledInput
+      prefersEchoCancelledInput,
+      (warning) => {
+        console.warn(`${warning.name}: ${warning.message}`);
+      }
     );
   }
 
@@ -237,15 +249,6 @@ export async function configureAudioAndActivate<
       acceptsDelayedFocusGain
     );
   }
-  const options: ActivationOptions = {
-    platform:
-      !!params.ios && !!params.android
-        ? 'both'
-        : params.android
-          ? 'android'
-          : 'ios',
-  };
-  await activate(options);
   // other platforms: no-op
 }
 /**
@@ -270,24 +273,32 @@ export function addListener<T extends ListenerType>(
   listener: (event: ListenerEvent[T]) => void
 ): () => void {
   let listenerId: number;
-  if (type === 'audioInterruption') {
-    listenerId = AudioManagerHybridObject.addInterruptionListener(
-      listener as (event: InterruptionEvent) => void
-    );
-    return () => {
-      AudioManagerHybridObject.removeInterruptionListeners(listenerId);
-    };
-  } else if (type === 'routeChange') {
-    listenerId = AudioManagerHybridObject.addRouteChangeListener(
-      listener as (event: RouteChangeEvent) => void
-    );
-    return () => {
-      AudioManagerHybridObject.removeRouteChangeListeners(listenerId);
-    };
-  } else {
-    const _exhaustive: never = type;
-    console.warn(`Unhandled listener type: ${_exhaustive}`);
-    return () => {};
+  switch (type) {
+    case 'audioInterruption':
+      listenerId = AudioManagerHybridObject.addInterruptionListener(
+        listener as (event: InterruptionEvent) => void
+      );
+      return () => {
+        AudioManagerHybridObject.removeInterruptionListeners(listenerId);
+      };
+    case 'routeChange':
+      listenerId = AudioManagerHybridObject.addRouteChangeListener(
+        listener as (event: RouteChangeEvent) => void
+      );
+      return () => {
+        AudioManagerHybridObject.removeRouteChangeListeners(listenerId);
+      };
+    case 'volume':
+      listenerId = AudioManagerHybridObject.addVolumeListener(
+        listener as (value: number) => void
+      );
+      return () => {
+        AudioManagerHybridObject.removeVolumeListener(listenerId);
+      };
+    default:
+      const _exhaustive: never = type;
+      console.warn(`Unhandled listener type: ${_exhaustive}`);
+      return () => {};
   }
 }
 

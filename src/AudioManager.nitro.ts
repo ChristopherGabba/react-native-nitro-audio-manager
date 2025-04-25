@@ -2,6 +2,7 @@ import type { HybridObject } from 'react-native-nitro-modules';
 import type {
   AudioManagerStatus,
   AudioSessionStatus,
+  AudioSessionWarning,
   InterruptionEvent,
   PortDescription,
   RouteChangeEvent,
@@ -14,7 +15,7 @@ export interface AudioManager
    */
   getOutputLatency(): number;
   getInputLatency(): number;
-  getAvailableInputs(): PortDescription[];
+  getCategoryCompatibleInputs(): PortDescription[];
   getCurrentInputRoutes(): PortDescription[];
   getCurrentOutputRoutes(): PortDescription[];
   isWiredHeadphonesConnected(): boolean;
@@ -31,6 +32,8 @@ export interface AudioManager
   removeInterruptionListeners(id: number): void;
   addRouteChangeListener(callback: (event: RouteChangeEvent) => void): number;
   removeRouteChangeListeners(id: number): void;
+  addVolumeListener(callback: (value: number) => void): number;
+  removeVolumeListener(id: number): void;
   getAudioSessionStatusIOS(): AudioSessionStatus | undefined;
   configureAudioSession(
     category: string,
@@ -40,7 +43,8 @@ export interface AudioManager
     prefersNoInterruptionFromSystemAlerts: boolean,
     prefersInterruptionOnRouteDisconnect: boolean,
     allowHapticsAndSystemSoundsDuringRecording: boolean,
-    prefersEchoCancelledInput: boolean
+    prefersEchoCancelledInput: boolean,
+    warningCallback: (warning: AudioSessionWarning) => void
   ): void;
   /**
    * Android Only
