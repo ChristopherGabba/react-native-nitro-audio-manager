@@ -25,6 +25,7 @@ import {
   addListener,
   useIsHeadphonesConnected,
   PortDescription,
+  setSystemVolume,
 } from 'react-native-audio-manager';
 import { appendWithLimit } from './utils';
 import {
@@ -32,13 +33,13 @@ import {
   runIOSCategoryTests,
   TestResult,
 } from './iosCombinations';
+import Slider from '@react-native-community/slider';
 
 export default function App() {
   // simple pieces of state
 
-  const [systemVolume, setSystemVolume] = useState<number>(getSystemVolume());
-  const [liveUpdateVolume, setLiveUpdateVolume] =
-    useState<number>(getSystemVolume());
+  const [volume, setVolume] = useState<number>(0);
+  const [liveUpdateVolume, setLiveUpdateVolume] = useState<number>(0);
   const [outLatency, setOutLatency] = useState<number>(getOutputLatency());
   const [inLatency, setInLatency] = useState<number>(getInputLatency());
   const [inRoutes, setInRoutes] = useState<string>();
@@ -92,8 +93,12 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const unsub = addListener('volume', (volume) => {
-      setLiveUpdateVolume(volume);
+    getSystemVolume().then((value) => {
+      setVolume(value);
+      setLiveUpdateVolume(value);
+    });
+    const unsub = addListener('volume', (value) => {
+      setLiveUpdateVolume(value);
     });
     return unsub;
   }, []);
@@ -129,20 +134,31 @@ export default function App() {
         <View style={styles.row}>
           <Button
             title="Get System Volume Manually"
-            onPress={() => {
-              const volume = getSystemVolume();
-              console.log('Got volume', volume);
-              setSystemVolume(volume);
+            onPress={async () => {
+              const value = await getSystemVolume();
+              console.log('Got volume', value);
+              setVolume(value);
             }}
           />
-          <Text style={styles.monospaced}>{systemVolume.toFixed(2)}</Text>
+          <Text style={styles.monospaced}>{volume.toFixed(2)}</Text>
         </View>
         <Text style={styles.testNote}>
           Test #2: Raise volume up and down, this value should update
           automatically.
         </Text>
         <Text style={styles.monospaced}>{liveUpdateVolume.toFixed(2)}</Text>
-
+        <Slider
+          style={styles.slider}
+          minimumValue={0}
+          maximumValue={1}
+          minimumTrackTintColor="#FFFFFF"
+          maximumTrackTintColor="#000000"
+          onValueChange={(value) => {
+            setSystemVolume(value);
+          }}
+          onSlidingComplete={async (value) => setLiveUpdateVolume(value)}
+          value={liveUpdateVolume}
+        />
         <Text style={styles.heading}>Latency</Text>
         <Text style={styles.testNote}>
           Test #3: Plug in wired headphones and check latencies.
@@ -291,6 +307,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f7f7f7' },
   inner: { padding: 16 },
+  slider: { width: '100%', height: 40, marginTop: 16 },
   title: { fontSize: 20, fontWeight: '600', textAlign: 'center' },
   heading: { fontSize: 18, fontWeight: '600', marginTop: 24 },
   testNote: {

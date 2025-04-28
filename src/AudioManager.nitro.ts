@@ -20,7 +20,8 @@ export interface AudioManager
   getCurrentOutputRoutes(): PortDescription[];
   isWiredHeadphonesConnected(): boolean;
   isBluetoothHeadphonesConnected(): boolean;
-  getSystemVolume(): number;
+  getSystemVolume(): Promise<number>;
+  setSystemVolume(value: number): Promise<void>;
   activate(
     warningCallback: (warning: AudioSessionWarning) => void
   ): Promise<void>;

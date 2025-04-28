@@ -33,12 +33,25 @@ function processWarning(warning: AudioSessionWarning) {
 
 /**
  * Returns the current system volume:
- * - **iOS:** a single number in the range [0–1]
+ * - **iOS:** a single number in the range [0–1]. Note that an audio session must be active for this to return a valid value.
+ * A warning will be logged if the audio session is not active.
  * - **Android:** the music stream volume in the range [0–1]
  */
-export function getSystemVolume(): number {
+export function getSystemVolume(): Promise<number> {
   return AudioManagerHybridObject.getSystemVolume();
 }
+
+export function setSystemVolume(value: number): Promise<void> {
+  return AudioManagerHybridObject.setSystemVolume(value);
+}
+
+// /**
+//  * Sets the system volume to a specified value:
+//  * - **value**: a number in the range [0–1]
+//  */
+// export function setSystemVolume(value: number): void {
+//   return AudioManagerHybridObject.setSystemVolume(value);
+// }
 
 /**
  * Returns the current output latency in milliseconds.
@@ -240,7 +253,11 @@ export async function configureAudio<
   // other platforms: no-op
 }
 /**
- * Adds a strongly-typed listener and returns an unsubscribe function.
+ * Adds a strongly-typed listener and returns an unsubscribe function. Supported listener types:
+ * - `audioInterruption`: triggered when the audio session is interrupted (e.g., incoming call).
+ * - `routeChange`: triggered when the audio route changes (e.g., headphones plugged in/out).
+ * - `volume`: triggered when the system volume changes. For ios, this takes control of the audio session and will not work if the audio session is not active.
+ * This is useful for tracking volume changes in real-time.
  *
  * @example
  * ```ts

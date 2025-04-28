@@ -1,5 +1,6 @@
 import AVFoundation
 import Foundation
+import MediaPlayer
 import NitroModules
 
 typealias InterruptionListener = (InterruptionEvent) -> Void
@@ -31,15 +32,51 @@ class AudioManager: HybridAudioManagerSpec {
 
   private var volumeObservation: NSKeyValueObservation?
 
+  private var hiddenVolumeView: HiddenVolumeView?
   // MARK: Listeners
 
   override init() {
     super.init()
     registerListeners()
+    initVolumeView()
   }
 
   deinit {
     unregisterListeners()
+    removeVolumeView()
+  }
+
+  private func initVolumeView() {
+    DispatchQueue.main.async { [weak self] in
+      self?.hiddenVolumeView = HiddenVolumeView(frame: .zero)
+
+      var keyWindow: UIWindow?
+      let scenes = UIApplication.shared.connectedScenes
+      if let windowScene = scenes.first(where: { $0.activationState == .foregroundActive })
+        as? UIWindowScene
+      {
+        keyWindow = windowScene.windows.first(where: { $0.isKeyWindow })
+      } else if let windowScene = scenes.first as? UIWindowScene {
+        keyWindow = windowScene.windows.first(where: { $0.isKeyWindow })
+      }
+
+      if let window = keyWindow, let hiddenVolumeView = self?.hiddenVolumeView {
+        window.addSubview(hiddenVolumeView)
+        hiddenVolumeView.frame = CGRect(x: -2000, y: -2000, width: 1, height: 1)
+        hiddenVolumeView.isHidden = true
+        print("AudioManager: HiddenVolumeView added to window")
+      } else {
+        print("AudioManager: No key window available for HiddenVolumeView")
+      }
+    }
+  }
+
+  private func removeVolumeView() {
+    DispatchQueue.main.async { [weak self] in
+      self?.hiddenVolumeView?.removeFromSuperview()
+      self?.hiddenVolumeView = nil
+      print("AudioManager: HiddenVolumeView removed")
+    }
   }
 
   private func registerListeners() {
@@ -54,6 +91,20 @@ class AudioManager: HybridAudioManagerSpec {
       self,
       selector: #selector(handleRouteChange(_:)),
       name: AVAudioSession.routeChangeNotification,
+      object: nil
+    )
+
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(reactivateSessionIfVolumeListenersAreActive),
+      name: UIApplication.willEnterForegroundNotification,
+      object: nil
+    )
+
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(handleDidEnterBackground),
+      name: UIApplication.didEnterBackgroundNotification,
       object: nil
     )
 
@@ -73,12 +124,42 @@ class AudioManager: HybridAudioManagerSpec {
       object: nil
     )
 
+    NotificationCenter.default.removeObserver(
+      self,
+      name: UIApplication.willEnterForegroundNotification,
+      object: nil
+    )
+
+    NotificationCenter.default.removeObserver(
+      self,
+      name: UIApplication.didEnterBackgroundNotification,
+      object: nil
+    )
+
     volumeObservation?.invalidate()
     volumeObservation = nil
 
     interruptionListeners.removeAll()
     routeChangeListeners.removeAll()
     volumeListeners.removeAll()
+  }
+
+  // If volume listeners are active, they deactivate
+  // When the app goes into background, we need to re-activate the session
+  @objc private func reactivateSessionIfVolumeListenersAreActive(_ notification: Notification) {
+    // Only activate if not already active
+    if !isSessionActive && !volumeListeners.isEmpty {
+      do {
+        try audioSession.setActive(true)
+        isSessionActive = true
+      } catch {
+        print("Failed to activate audio session on foreground: \(error.localizedDescription)")
+      }
+    }
+  }
+
+  @objc private func handleDidEnterBackground(_ notification: Notification) {
+    isSessionActive = false
   }
 
   @objc private func handleInterruption(_ note: Notification) {
@@ -202,8 +283,29 @@ class AudioManager: HybridAudioManagerSpec {
     }
   }
 
-  public func getSystemVolume() throws -> Double {
-    return Double(audioSession.outputVolume)
+  public func getSystemVolume() throws -> Promise<Double> {
+    return Promise.async {
+      if let volume = await self.hiddenVolumeView?.getVolume() {
+        return volume
+      } else {
+        // Fallback to AVAudioSession if HiddenVolumeView fails
+        return Double(self.audioSession.outputVolume)
+      }
+    }
+
+  }
+
+  public func setSystemVolume(value: Double) throws -> Promise<Void> {
+    return Promise.async {
+      guard let hiddenVolumeView = self.hiddenVolumeView else {
+        throw AudioSessionError.error(
+          name: "FAILED_TO_SET_VOLUME",
+          message: "Internal volume view is not initialized or available."
+        )
+      }
+      await hiddenVolumeView.setVolume(value)
+    }
+
   }
 
   public func isActive() throws -> Bool {

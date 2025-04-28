@@ -153,7 +153,7 @@ class AudioManager : HybridAudioManagerSpec() {
     volumeListeners.removeAll { it.id == id }
   }
 
-  override fun getSystemVolume(): Double {
+  override fun getSystemVolume(warningCallback: (AudioSessionWarning) -> Unit): Double {
     val current = am.getStreamVolume(SysAudioManager.STREAM_MUSIC)
     val max     = am.getStreamMaxVolume(SysAudioManager.STREAM_MUSIC)
     return if (max > 0) current.toDouble() / max.toDouble() else 0.0
