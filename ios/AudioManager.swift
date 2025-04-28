@@ -64,9 +64,7 @@ class AudioManager: HybridAudioManagerSpec {
         window.addSubview(hiddenVolumeView)
         hiddenVolumeView.frame = CGRect(x: -2000, y: -2000, width: 1, height: 1)
         hiddenVolumeView.isHidden = true
-        print("AudioManager: HiddenVolumeView added to window")
       } else {
-        print("AudioManager: No key window available for HiddenVolumeView")
       }
     }
   }
@@ -75,7 +73,6 @@ class AudioManager: HybridAudioManagerSpec {
     DispatchQueue.main.async { [weak self] in
       self?.hiddenVolumeView?.removeFromSuperview()
       self?.hiddenVolumeView = nil
-      print("AudioManager: HiddenVolumeView removed")
     }
   }
 
@@ -300,7 +297,7 @@ class AudioManager: HybridAudioManagerSpec {
       guard let hiddenVolumeView = self.hiddenVolumeView else {
         throw AudioSessionError.error(
           name: "FAILED_TO_SET_VOLUME",
-          message: "Internal volume view is not initialized or available."
+          message: "MPVolumeView is not initialized or available."
         )
       }
       await hiddenVolumeView.setVolume(value)
