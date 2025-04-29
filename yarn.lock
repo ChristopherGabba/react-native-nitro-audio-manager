@@ -1598,6 +1598,41 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@christophergabba/react-native-audio-manager@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@christophergabba/react-native-audio-manager@workspace:."
+  dependencies:
+    "@commitlint/config-conventional": ^19.6.0
+    "@eslint/compat": ^1.2.7
+    "@eslint/eslintrc": ^3.3.0
+    "@eslint/js": ^9.22.0
+    "@evilmartians/lefthook": ^1.5.0
+    "@react-native/eslint-config": ^0.78.0
+    "@release-it/conventional-changelog": ^9.0.2
+    "@types/jest": ^29.5.5
+    "@types/react": ^19.0.0
+    commitlint: ^19.6.1
+    del-cli: ^5.1.0
+    eslint: ^9.22.0
+    eslint-config-prettier: ^10.1.1
+    eslint-plugin-prettier: ^5.2.3
+    jest: ^29.7.0
+    nitro-codegen: ^0.25.2
+    prettier: ^3.0.3
+    react: 19.0.0
+    react-native: 0.79.1
+    react-native-builder-bob: ^0.40.6
+    react-native-nitro-modules: ^0.25.2
+    release-it: ^17.10.0
+    turbo: ^1.10.7
+    typescript: ^5.2.2
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+    react-native-nitro-modules: ^0.25.2
+  languageName: unknown
+  linkType: soft
+
 "@commitlint/cli@npm:^19.8.0":
   version: 19.8.0
   resolution: "@commitlint/cli@npm:19.8.0"
@@ -11580,41 +11615,6 @@ __metadata:
     react-native: 0.79.1
     react-native-builder-bob: ^0.40.6
     react-native-element-dropdown: ^2.12.4
-    react-native-nitro-modules: ^0.25.2
-  languageName: unknown
-  linkType: soft
-
-"react-native-audio-manager@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "react-native-audio-manager@workspace:."
-  dependencies:
-    "@commitlint/config-conventional": ^19.6.0
-    "@eslint/compat": ^1.2.7
-    "@eslint/eslintrc": ^3.3.0
-    "@eslint/js": ^9.22.0
-    "@evilmartians/lefthook": ^1.5.0
-    "@react-native/eslint-config": ^0.78.0
-    "@release-it/conventional-changelog": ^9.0.2
-    "@types/jest": ^29.5.5
-    "@types/react": ^19.0.0
-    commitlint: ^19.6.1
-    del-cli: ^5.1.0
-    eslint: ^9.22.0
-    eslint-config-prettier: ^10.1.1
-    eslint-plugin-prettier: ^5.2.3
-    jest: ^29.7.0
-    nitro-codegen: ^0.25.2
-    prettier: ^3.0.3
-    react: 19.0.0
-    react-native: 0.79.1
-    react-native-builder-bob: ^0.40.6
-    react-native-nitro-modules: ^0.25.2
-    release-it: ^17.10.0
-    turbo: ^1.10.7
-    typescript: ^5.2.2
-  peerDependencies:
-    react: "*"
-    react-native: "*"
     react-native-nitro-modules: ^0.25.2
   languageName: unknown
   linkType: soft

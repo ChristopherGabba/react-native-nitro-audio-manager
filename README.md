@@ -10,7 +10,7 @@ A React Native library powered by [NitroModules](https://reactnative.dev/docs/na
 - [react-native-vision-camera](https://github.com/mrousavy/react-native-vision-camera)
 - etc.
 
-> ⚠️ When using this library alongside those packages, you'll often need to **disable or override their built-in audio session handling**, to avoid conflicts. [react-native-video](https://github.com/react-native-video/react-native-video) recently announced they will be supporting an audio session disabled prop
+> ⚠️ When using this library alongside those packages, you'll often need to **disable or override their built-in audio session handling**, to avoid conflicts. [react-native-video](https://github.com/react-native-video/react-native-video) recently announced they will be supporting an audio session disabled [prop](https://docs.thewidlarzgroup.com/react-native-video/component/props#disableaudiosessionmanagement).
 
 ## Features
 - Configure audio sessions (category, mode, options, etc.)
@@ -260,7 +260,7 @@ const inputs = getCategoryCompatibleInputs();
 if (inputs) {
   console.log('Compatible input ports:', inputs);
 } else {
-  console.log('Not supported on with category');
+  console.log('No inputs supported with category');
 }
 ```
 
@@ -340,6 +340,7 @@ import {
     configureAudio, 
     AudioSessionCategory, 
     AudioSessionMode,
+    AudioSessionCategoryOptions,
     AudioContentTypes,
     AudioFocusGainTypes,
     AudioUsages
@@ -428,7 +429,7 @@ Activates the native audio session (iOS) or audio focus (Android).
 - **Android:** Requests audio focus via `AudioManager`.
 - **Other platforms:** No-op.
 
-> ⚠️ On iOS, activating the audio session can cause slight UI stuttering.  
+> ⚠️ On iOS, activating the audio session is a pretty cumbersome operation and can operate.  
 > Consider deferring it slightly with `setTimeout(() => activate(), 100)` if needed.
 
 ---
