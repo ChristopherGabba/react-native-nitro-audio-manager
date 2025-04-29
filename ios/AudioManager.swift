@@ -292,7 +292,7 @@ class AudioManager: HybridAudioManagerSpec {
 
   }
 
-  public func setSystemVolume(value: Double) throws -> Promise<Void> {
+  public func setSystemVolume(value: Double, showUI: Bool) throws -> Promise<Void> {
     return Promise.async {
       guard let hiddenVolumeView = self.hiddenVolumeView else {
         throw AudioSessionError.error(
@@ -368,12 +368,22 @@ class AudioManager: HybridAudioManagerSpec {
           try self.audioSession.setActive(true)
           self.isSessionActive = true
         } else {
-          warningCallback(
-            AudioSessionWarning(
-              name: "MULTIPLE_ACTIVATION_WARNING",
-              message:
-                "Activation function called while the session was already active. Did you mean to do this?"
-            ))
+          if self.volumeListeners.isEmpty {
+            warningCallback(
+              AudioSessionWarning(
+                name: "MULTIPLE_ACTIVATION_WARNING",
+                message:
+                  "Activation function called while the session was already active. Did you mean to do this?"
+              ))
+          } else {
+            warningCallback(
+              AudioSessionWarning(
+                name: "SESSION_ALREADY_ACTIVE_WITH_VOLUME_LISTENER",
+                message:
+                  "Warning Only: The audio session was already active with a volume listener."
+              ))
+          }
+
         }
 
       } catch {
@@ -790,7 +800,7 @@ class AudioManager: HybridAudioManagerSpec {
     guard let reason = reason else {
       return .default
     }
-
+    // sceneWasBackgrounded is relevent but it's only available on VisionOS.
     switch reason {
     case .builtInMicMuted:
       return .builtinmicmuted

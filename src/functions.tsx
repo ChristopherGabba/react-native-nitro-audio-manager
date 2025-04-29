@@ -40,9 +40,19 @@ function processWarning(warning: AudioSessionWarning) {
 export function getSystemVolume(): Promise<number> {
   return AudioManagerHybridObject.getSystemVolume();
 }
-
-export function setSystemVolume(value: number): Promise<void> {
-  return AudioManagerHybridObject.setSystemVolume(value);
+/**
+ * Sets the system volume to a specified value:
+ * - **value**: a number in the range [0–1]
+ * - **showUI**: *Android Only* if `true`, shows the system volume UI (iOS only).
+ *   Defaults to `true` to avoid showing the UI. On ios, the UI always shows.
+ *
+ * @platform iOS, Android
+ */
+export function setSystemVolume(
+  value: number,
+  options: { showUI: boolean } = { showUI: true }
+): Promise<void> {
+  return AudioManagerHybridObject.setSystemVolume(value, options.showUI);
 }
 
 // /**

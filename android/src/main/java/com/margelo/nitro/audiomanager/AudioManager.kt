@@ -11,6 +11,7 @@ import com.margelo.nitro.NitroModules
 import android.content.Context
 import com.margelo.nitro.core.*
 import android.util.Log
+import kotlin.math.roundToInt
 
 data class Listener<T>(
   val id: Double,
@@ -38,31 +39,46 @@ class AudioManager : HybridAudioManagerSpec() {
   private val interruptionListeners = mutableListOf<Listener<(InterruptionEvent) -> Unit>>()
   private val routeChangeListeners = mutableListOf<Listener<(RouteChangeEvent) -> Unit>>()
   private val volumeListeners = mutableListOf<Listener<(Double) -> Unit>>()
+  private var volumeReceiver: VolumeReceiver? = null
 
   private var nextListenerId = 0.0
 
   private var lastRoute: Array<PortDescription> = emptyArray()
   private var currentFocusRequest: AudioFocusRequest? = null
-
+  private var hasAudioFocus: Boolean = false
   private var focusGainType: Int = SysAudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
   private var usage: Int         = AudioAttributes.USAGE_MEDIA
   private var contentType: Int   = AudioAttributes.CONTENT_TYPE_MUSIC
   private var willPauseWhenDucked: Boolean    = true
   private var acceptsDelayedFocusGain: Boolean = false
 
+
+
   private val focusCallback = SysAudioManager.OnAudioFocusChangeListener { focus ->
     val type = when (focus) {
-      SysAudioManager.AUDIOFOCUS_LOSS,
-      SysAudioManager.AUDIOFOCUS_LOSS_TRANSIENT             -> InterruptionType.BEGAN
-      else                                                  -> InterruptionType.ENDED
+        SysAudioManager.AUDIOFOCUS_LOSS,
+        SysAudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+            hasAudioFocus = false
+            InterruptionType.BEGAN
+        }
+        SysAudioManager.AUDIOFOCUS_GAIN,
+        SysAudioManager.AUDIOFOCUS_GAIN_TRANSIENT,
+        SysAudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK,
+        SysAudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE -> {
+            hasAudioFocus = true
+            InterruptionType.ENDED
+        }
+        else -> {
+            hasAudioFocus = false
+            InterruptionType.BEGAN
+        }
     }
 
     val reason = when (focus) {
-      SysAudioManager.AUDIOFOCUS_LOSS,
-      SysAudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
-      SysAudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK   -> InterruptionReason.APPWASSUSPENDED
-
-      else                                                 -> InterruptionReason.DEFAULT
+        SysAudioManager.AUDIOFOCUS_LOSS,
+        SysAudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
+        SysAudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> InterruptionReason.APPWASSUSPENDED
+        else -> InterruptionReason.DEFAULT
     }
 
     val ev = InterruptionEvent(type, reason)
@@ -134,14 +150,25 @@ class AudioManager : HybridAudioManagerSpec() {
     routeChangeListeners.forEach { it.callback(ev) }
   }
 
-    override fun addVolumeListener(callback: (Double) -> Unit): Double {
-    if (volumeListeners.isEmpty()) {
-      lastRoute = am
-        .getDevices(SysAudioManager.GET_DEVICES_OUTPUTS)
-        .map { mapToPort(it) }
-        .toTypedArray()
+  private inner class VolumeReceiver : android.content.BroadcastReceiver() {
+    override fun onReceive(context: Context?, intent: android.content.Intent?) {
+        if (intent?.action == "android.media.VOLUME_CHANGED_ACTION") {
+            val current = am.getStreamVolume(SysAudioManager.STREAM_MUSIC)
+            val max = am.getStreamMaxVolume(SysAudioManager.STREAM_MUSIC)
+            val normalized = if (max > 0) current.toDouble() / max.toDouble() else 0.0
+            volumeListeners.forEach { it.callback(normalized) }
+        }
+    }
+  }
 
-      am.registerAudioDeviceCallback(deviceCallback, null)
+
+  override fun addVolumeListener(callback: (Double) -> Unit): Double {
+    if (volumeListeners.isEmpty()) {
+        volumeReceiver = VolumeReceiver()
+        NitroModules.applicationContext?.registerReceiver(
+            volumeReceiver,
+            android.content.IntentFilter("android.media.VOLUME_CHANGED_ACTION")
+        )
     }
     val id = nextListenerId++
     volumeListeners += Listener(id, callback)
@@ -151,12 +178,41 @@ class AudioManager : HybridAudioManagerSpec() {
 
   override fun removeVolumeListener(id: Double) {
     volumeListeners.removeAll { it.id == id }
+    if (volumeListeners.isEmpty()) {
+        volumeReceiver?.let { receiver ->
+            NitroModules.applicationContext?.unregisterReceiver(receiver)
+            volumeReceiver = null
+        }
+    }
   }
 
-  override fun getSystemVolume(warningCallback: (AudioSessionWarning) -> Unit): Double {
-    val current = am.getStreamVolume(SysAudioManager.STREAM_MUSIC)
-    val max     = am.getStreamMaxVolume(SysAudioManager.STREAM_MUSIC)
-    return if (max > 0) current.toDouble() / max.toDouble() else 0.0
+  override fun getSystemVolume(): Promise<Double> {
+    return Promise.async {
+        val current = am.getStreamVolume(SysAudioManager.STREAM_MUSIC)
+        val max     = am.getStreamMaxVolume(SysAudioManager.STREAM_MUSIC)
+        if (max > 0) current.toDouble() / max.toDouble() else 0.0
+    }
+  }
+
+  override fun setSystemVolume(value: Double, showUI: Boolean): Promise<Unit> = Promise.async {
+    val maxVolume = am.getStreamMaxVolume(SysAudioManager.STREAM_MUSIC)
+    val newVolume = (value.coerceIn(0.0, 1.0) * maxVolume).roundToInt()
+
+    val flags = if (showUI) {
+        SysAudioManager.FLAG_SHOW_UI
+    } else {
+        0
+    }
+
+    am.setStreamVolume(
+        SysAudioManager.STREAM_MUSIC,
+        newVolume,
+        flags
+    )
+}
+
+  override fun isActive(): Boolean {
+    return hasAudioFocus
   }
 
   override fun activate(warningCallback: (AudioSessionWarning) -> Unit): Promise<Unit> = Promise.async {
@@ -180,6 +236,8 @@ class AudioManager : HybridAudioManagerSpec() {
       val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && currentFocusRequest != null) {
         am.requestAudioFocus(currentFocusRequest!!)
       } else {
+        // For older APIs, fallback to the deprecated method
+        @Suppress("DEPRECATION")
         am.requestAudioFocus(
           focusCallback,
           SysAudioManager.STREAM_MUSIC,
@@ -200,6 +258,7 @@ class AudioManager : HybridAudioManagerSpec() {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && currentFocusRequest != null) {
         am.abandonAudioFocusRequest(currentFocusRequest!!)
       } else {
+        @Suppress("DEPRECATION")
         am.abandonAudioFocus(focusCallback)
       }
   }
@@ -266,12 +325,13 @@ class AudioManager : HybridAudioManagerSpec() {
       uid = device.id.toString(),
       channels = device.channelCounts.takeIf { it.isNotEmpty() }?.map { it.toDouble() }?.toDoubleArray(),
       isDataSourceSupported = true,
-      selectedDataSourceId = null 
+      selectedDataSourceId = null
     )
   }
 
   override fun getCategoryCompatibleInputs(): Array<PortDescription> {
     // no op
+    return arrayOf()
   }
 
   override fun getCurrentInputRoutes(): Array<PortDescription> {
@@ -333,11 +393,11 @@ class AudioManager : HybridAudioManagerSpec() {
       ?: arrayOf()
   }
 
-  override fun forceOutputToSpeaker() { 
+  override fun forceOutputToSpeaker(warningCallback: (AudioSessionWarning) -> Unit) {
     // no op
   }
 
-  override fun cancelForcedOutputToSpeaker() { 
+  override fun cancelForcedOutputToSpeaker() {
     // no op
   }
 

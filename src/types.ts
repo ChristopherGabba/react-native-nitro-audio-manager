@@ -145,7 +145,7 @@ export const AudioSessionCategory = {
    *
    * **Compatible Cateogory Options**:
    *
-   * AllowBluetoothA2DP
+   * AllowBluetoothA2DP (set by default)
    */
   SoloAmbient: 'SoloAmbient',
   /**
@@ -159,7 +159,7 @@ export const AudioSessionCategory = {
    *
    * **Compatible Cateogory Options**:
    *
-   * MixWithOthers, DuckOthers, InterruptSpokenAudioAndMixWithOthers, AllowBluetoothA2DP
+   * MixWithOthers, DuckOthers, InterruptSpokenAudioAndMixWithOthers, AllowBluetoothA2DP (set by default)
    */
   Playback: 'Playback',
   /**
@@ -177,7 +177,7 @@ export const AudioSessionCategory = {
    *
    * **Compatible Cateogory Options**:
    *
-   * MixWithOthers, DuckOthers, InterruptSpokenAudioAndMixWithOthers, AllowBluetooth, AllowBluetoothA2DP, AllowAirPlay, DefaultToSpeaker, OverrideMutedMicrophoneInterruption
+   * MixWithOthers, DuckOthers, InterruptSpokenAudioAndMixWithOthers, AllowBluetooth, AllowBluetoothA2DP (set by default), AllowAirPlay, DefaultToSpeaker, OverrideMutedMicrophoneInterruption
    *
    */
   PlayAndRecord: 'PlayAndRecord',
@@ -412,13 +412,12 @@ export type AudioSessionCompatibleModes = {
  * Each array represents a valid set of options that can be used together.
  */
 export type AudioSessionCompatibleCategoryOptions = {
-  Ambient: 'MixWithOthers' | 'AllowBluetoothA2DP';
-  SoloAmbient: 'AllowBluetoothA2DP';
+  Ambient: 'MixWithOthers';
+  SoloAmbient: never; // no compatible options, just leave blank
   Playback:
     | 'MixWithOthers'
     | 'DuckOthers'
-    | 'InterruptSpokenAudioAndMixWithOthers'
-    | 'AllowBluetoothA2DP';
+    | 'InterruptSpokenAudioAndMixWithOthers';
   Record: 'AllowBluetooth';
   PlayAndRecord:
     | 'MixWithOthers'
@@ -464,7 +463,7 @@ export type DeactivationOptions = {
    * `deactivate`, your volume listener won't work anymore. This is because in order to actively track volume you need an active
    * audio session. Setting this to true will skip the deactivation of the session, but then fallback to `Ambient` category
    * @platform: `iOS`
-   * @default true
+   * @default false
    *
    */
   fallbackToAmbientCategoryAndLeaveActiveForVolumeListener?: boolean;
@@ -509,7 +508,7 @@ export type InterruptionReason =
   | 'Default'
   | 'BuiltInMicMuted'
   | 'RouteDisconnected'
-  | 'AppWasSuspended';
+  | 'AppWasSuspended'; // Deprecated but still kind of valid
 
 export interface InterruptionEvent {
   type: InterruptionType;

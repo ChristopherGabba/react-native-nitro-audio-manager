@@ -81,7 +81,7 @@
     "nitro-codegen": "^0.25.2",
     "prettier": "^3.0.3",
     "react": "19.0.0",
-    "react-native": "0.78.2",
+    "react-native": "0.79.1",
     "react-native-builder-bob": "^0.40.6",
     "react-native-nitro-modules": "^0.25.2",
     "release-it": "^17.10.0",
@@ -92,6 +92,11 @@
     "react": "*",
     "react-native": "*",
     "react-native-nitro-modules": "^0.25.2"
+  },
+  "resolutions": {
+    "metro": "0.82.0",
+    "metro-config": "0.82.0",
+    "metro-resolver": "0.82.0"
   },
   "workspaces": [
     "example"

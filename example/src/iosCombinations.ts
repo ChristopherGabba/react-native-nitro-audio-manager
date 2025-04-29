@@ -41,25 +41,12 @@ export async function runIOSCategoryTests(
         const testPassedSuccessfully =
           categoriesMatched && modesMatched && optionWasInStatus;
 
-        console.log(
-          test.testId,
-          'Test Result:',
-          testPassedSuccessfully === test.shouldPass,
-          'Category Match:',
-          categoriesMatched,
-          'Modes Match:',
-          modesMatched,
-          'Options Match:',
-          optionWasInStatus
-        );
-        console.log(test.testId === 4 ? status : undefined);
         onTestFinished({
           passResult: testPassedSuccessfully === test.shouldPass,
           testId: test.testId,
         });
       }
     } catch (error) {
-      console.log(test.testId, 'Test Passed:', !test.shouldPass, error);
       onTestFinished({
         passResult: test.shouldPass === false,
         testId: test.testId,

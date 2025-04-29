@@ -25,6 +25,11 @@ import {
   addListener,
   useIsHeadphonesConnected,
   PortDescription,
+  // setSystemVolume,
+  configureAudio,
+  AudioSessionCategory,
+  AudioSessionMode,
+  AudioSessionCategoryOptions,
   setSystemVolume,
 } from 'react-native-audio-manager';
 import { appendWithLimit } from './utils';
@@ -33,7 +38,8 @@ import {
   runIOSCategoryTests,
   TestResult,
 } from './iosCombinations';
-import Slider from '@react-native-community/slider';
+import { IOSSessionPicker, IOSSessionPickerValue } from './IOSSessionPicker';
+// import Slider from '@react-native-community/slider';
 
 export default function App() {
   // simple pieces of state
@@ -42,12 +48,16 @@ export default function App() {
   const [liveUpdateVolume, setLiveUpdateVolume] = useState<number>(0);
   const [outLatency, setOutLatency] = useState<number>(getOutputLatency());
   const [inLatency, setInLatency] = useState<number>(getInputLatency());
-  const [inRoutes, setInRoutes] = useState<string>();
-  const [outRoutes, setOutRoutes] = useState<any>();
+  const [inRoutes, setInRoutes] = useState<PortDescription[]>([]);
+  const [outRoutes, setOutRoutes] = useState<PortDescription[]>([]);
   const [sessionStatus, setSessionStatus] = useState<any>(null);
   const { wired, wireless } = useIsHeadphonesConnected();
   const [isActivated, setIsActivated] = useState(false);
-
+  const [session, setSession] = useState<IOSSessionPickerValue>({
+    category: AudioSessionCategory.Ambient,
+    mode: AudioSessionMode.Default,
+    option: [AudioSessionCategoryOptions.MixWithOthers],
+  });
   const [lastFiveRouteChangeEvents, setLastFiveRouteChangeEvents] = useState<
     string[]
   >(['']);
@@ -116,7 +126,7 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.inner}>
-        <Text style={styles.title}>Audio Manager Example App:</Text>
+        <Text style={styles.title}>Audio Manager Example App</Text>
 
         <Text style={styles.heading}>Device Info:</Text>
         <Text style={styles.testNote}>
@@ -142,12 +152,18 @@ export default function App() {
           />
           <Text style={styles.monospaced}>{volume.toFixed(2)}</Text>
         </View>
+        <Button
+          title="Set system volume to 0.5"
+          onPress={async () => {
+            await setSystemVolume(0.5, { showUI: true });
+          }}
+        />
         <Text style={styles.testNote}>
           Test #2: Raise volume up and down, this value should update
           automatically.
         </Text>
         <Text style={styles.monospaced}>{liveUpdateVolume.toFixed(2)}</Text>
-        <Slider
+        {/* <Slider
           style={styles.slider}
           minimumValue={0}
           maximumValue={1}
@@ -158,7 +174,7 @@ export default function App() {
           }}
           onSlidingComplete={async (value) => setLiveUpdateVolume(value)}
           value={liveUpdateVolume}
-        />
+        /> */}
         <Text style={styles.heading}>Latency</Text>
         <Text style={styles.testNote}>
           Test #3: Plug in wired headphones and check latencies.
@@ -192,16 +208,16 @@ export default function App() {
         <Button
           title="Refresh Input / Outputs"
           onPress={() => {
-            setInRoutes(routesToString(getCurrentInputRoutes()));
-            setOutRoutes(routesToString(getCurrentOutputRoutes()));
+            setInRoutes(getCurrentInputRoutes());
+            setOutRoutes(getCurrentOutputRoutes());
           }}
         />
         <Text style={styles.value}>Inputs</Text>
-        <Text style={styles.monospaced}>{inRoutes}</Text>
-        <Text style={styles.value}>{inRoutes?.length ?? 0} ports</Text>
-        <Text style={styles.value}>Outupts</Text>
-        <Text style={styles.monospaced}>{outRoutes}</Text>
-        <Text style={styles.value}>{inRoutes?.length ?? 0} ports</Text>
+        <Text style={styles.monospaced}>{routesToString(inRoutes)}</Text>
+        <Text style={styles.value}>{inRoutes.length} ports</Text>
+        <Text style={[styles.value]}>Outputs</Text>
+        <Text style={styles.monospaced}>{routesToString(outRoutes)}</Text>
+        <Text style={styles.value}>{outRoutes.length} ports</Text>
         <Text style={styles.heading}>Headphones Connected & Events</Text>
         <Text style={styles.testNote}>
           Test Method: Unplug / plug in headphones (wired, bluetooth, etc.)
@@ -240,39 +256,76 @@ export default function App() {
           <Button title="Cancel Force" onPress={cancelForcedOutputToSpeaker} />
         </View>
 
-        <Text style={styles.heading}>Session Lifecycle</Text>
-        <View style={styles.row}>
-          <Button
-            title={isActivated ? 'Deactivate' : 'Activate'}
-            onPress={async () => {
-              if (isActivated) {
-                await deactivate({
-                  fallbackToAmbientCategoryAndLeaveActiveForVolumeListener:
-                    true,
-                  restorePreviousSessionOnDeactivation: true,
-                });
-              } else {
-                await activate();
-              }
-              setIsActivated(!isActivated);
-            }}
-          />
-          <Switch
-            value={isActivated}
-            onValueChange={async (v) => {
-              if (v) await activate();
-              else
-                await deactivate({
-                  fallbackToAmbientCategoryAndLeaveActiveForVolumeListener:
-                    true,
-                  restorePreviousSessionOnDeactivation: true,
-                });
-              setIsActivated(v);
-            }}
-          />
-        </View>
+        {Platform.OS === 'ios' && (
+          <>
+            <Text style={styles.heading}>Session Lifecycle</Text>
+            <IOSSessionPicker
+              onChange={(sessionValue) => {
+                setSession(sessionValue);
+              }}
+            />
+            <View style={styles.row}>
+              <Button title={isActivated ? 'Deactivate' : 'Activate'} />
+              <Switch
+                value={isActivated}
+                onValueChange={async (v) => {
+                  if (v) {
+                    await configureAudio({
+                      ios: {
+                        category: session?.category as AudioSessionCategory,
+                        mode: session?.mode as AudioSessionMode,
+                        categoryOptions:
+                          session?.option as AudioSessionCategoryOptions[],
+                      },
+                    });
+                    await activate();
+                  } else {
+                    await deactivate({
+                      restorePreviousSessionOnDeactivation: true,
+                    });
+                  }
 
-        <Text style={styles.heading}>Session Config</Text>
+                  setIsActivated(v);
+                }}
+              />
+            </View>
+            <Button
+              title="Run Category Tests"
+              onPress={() => {
+                setTestResults([]);
+                runIOSCategoryTests(iosTestCombinations, (result) => {
+                  addToTestArray(result);
+                });
+              }}
+            />
+            {testResults.map((result, index) => {
+              return (
+                <Text style={styles.monospaced} key={`result_${index}`}>
+                  {result}
+                </Text>
+              );
+            })}
+          </>
+        )}
+        {Platform.OS === 'android' && (
+          <View style={styles.row}>
+            <Button title={isActivated ? 'Deactivate' : 'Activate'} />
+            <Switch
+              value={isActivated}
+              onValueChange={async (v) => {
+                if (v) {
+                  await activate();
+                } else {
+                  await deactivate({
+                    restorePreviousSessionOnDeactivation: true,
+                  });
+                }
+                setIsActivated(v);
+              }}
+            />
+          </View>
+        )}
+        <Text style={styles.heading}>Audio Status</Text>
         <Button
           title="Get Status"
           onPress={() => setSessionStatus(getAudioSessionStatus())}
@@ -282,23 +335,6 @@ export default function App() {
             ? JSON.stringify(sessionStatus, null, 2)
             : 'no status yet'}
         </Text>
-        <Button
-          title="Run Category Tests"
-          onPress={() => {
-            console.log('Ran');
-            setTestResults([]);
-            runIOSCategoryTests(iosTestCombinations, (result) => {
-              addToTestArray(result);
-            });
-          }}
-        />
-        {testResults.map((result, index) => {
-          return (
-            <Text style={styles.monospaced} key={`result_${index}`}>
-              {result}
-            </Text>
-          );
-        })}
       </ScrollView>
     </SafeAreaView>
   );
@@ -321,7 +357,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     justifyContent: 'space-between',
   },
-  value: { marginLeft: 12, flex: 1 },
+  value: { marginLeft: 12, flex: 1, marginTop: 10 },
   monospaced: {
     fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace' }),
     backgroundColor: '#eee',

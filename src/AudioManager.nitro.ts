@@ -21,7 +21,7 @@ export interface AudioManager
   isWiredHeadphonesConnected(): boolean;
   isBluetoothHeadphonesConnected(): boolean;
   getSystemVolume(): Promise<number>;
-  setSystemVolume(value: number): Promise<void>;
+  setSystemVolume(value: number, showUI: boolean): Promise<void>;
   activate(
     warningCallback: (warning: AudioSessionWarning) => void
   ): Promise<void>;
