@@ -27,13 +27,13 @@ A React Native library powered by [NitroModules](https://reactnative.dev/docs/na
 Using npm:
 
 ```sh
-npm install react-native-audio-manager react-native-nitro-modules
+npm install @christophergabba/react-native-audio-manager react-native-nitro-modules
 ```
 
 Using yarn:
 
 ```sh
-yarn add react-native-audio-manager react-native-nitro-modules
+yarn add @christophergabba/react-native-audio-manager react-native-nitro-modules
 ```
 
 # Documentation
