@@ -21,7 +21,7 @@ import {
   cancelForcedOutputToSpeaker,
   activate,
   deactivate,
-  getAudioSessionStatus,
+  getAudioStatus,
   addListener,
   useIsHeadphonesConnected,
   PortDescription,
@@ -270,7 +270,7 @@ export default function App() {
                 value={isActivated}
                 onValueChange={async (v) => {
                   if (v) {
-                    await configureAudio({
+                    configureAudio({
                       ios: {
                         category: session?.category as AudioSessionCategory,
                         mode: session?.mode as AudioSessionMode,
@@ -328,7 +328,7 @@ export default function App() {
         <Text style={styles.heading}>Audio Status</Text>
         <Button
           title="Get Status"
-          onPress={() => setSessionStatus(getAudioSessionStatus())}
+          onPress={() => setSessionStatus(getAudioStatus())}
         />
         <Text style={styles.value}>
           {sessionStatus

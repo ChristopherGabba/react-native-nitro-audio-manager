@@ -32,9 +32,8 @@ function processWarning(warning: AudioSessionWarning) {
 }
 
 /**
- * Returns the current system volume:
- * - **iOS:** a single number in the range [0–1]. Note that an audio session must be active for this to return a valid value.
- * A warning will be logged if the audio session is not active.
+ * Returns the current system volume.
+ * - **iOS:** a single number in the range [0–1].
  * - **Android:** the music stream volume in the range [0–1]
  */
 export function getSystemVolume(): Promise<number> {
@@ -43,8 +42,8 @@ export function getSystemVolume(): Promise<number> {
 /**
  * Sets the system volume to a specified value:
  * - **value**: a number in the range [0–1]
- * - **showUI**: *Android Only* if `true`, shows the system volume UI (iOS only).
- *   Defaults to `true` to avoid showing the UI. On ios, the UI always shows.
+ * - **showUI**: *Android Only* if `true`, shows the system volume UI.
+ *   Defaults to `true`. On ios, the UI always shows.
  *
  * @platform iOS, Android
  */
@@ -52,7 +51,20 @@ export function setSystemVolume(
   value: number,
   options: { showUI: boolean } = { showUI: true }
 ): Promise<void> {
-  return AudioManagerHybridObject.setSystemVolume(value, options.showUI);
+  if (typeof value !== 'number')
+    throw new Error('INVALID_PARAMETER: Set volume only accepts a number');
+
+  let setpoint = value;
+
+  if (value < 0) {
+    console.warn('setSystemVolume received value < 0, clamping to 0.');
+    setpoint = 0;
+  } else if (value > 1) {
+    console.warn('setSystemVolume received value > 1, clamping to 1.');
+    setpoint = 1;
+  }
+
+  return AudioManagerHybridObject.setSystemVolume(setpoint, options.showUI);
 }
 
 // /**
@@ -197,7 +209,7 @@ type StatusResult = AudioSessionStatus | AudioManagerStatus | undefined;
  * @platform ios
  * @returns {AudioSessionStatus} A promise that resolves with the audio session status.
  */
-export function getAudioSessionStatus(): StatusResult {
+export function getAudioStatus(): StatusResult {
   if (Platform.OS === 'ios') {
     return AudioManagerHybridObject.getAudioSessionStatusIOS() as AudioSessionStatus;
   } else if (Platform.OS === 'android') {
@@ -211,11 +223,11 @@ export function getAudioSessionStatus(): StatusResult {
  * On iOS this calls configureAudioSession(...) then activate().
  * On Android this calls configureAudioManager(...) then activate().
  */
-export async function configureAudio<
+export function configureAudio<
   T extends AudioSessionCategory,
   M extends AudioSessionCompatibleModes[T],
   N extends AudioSessionCompatibleCategoryOptions[T],
->(params: ConfigureAudioAndActivateParams<T, M, N>): Promise<void> {
+>(params: ConfigureAudioAndActivateParams<T, M, N>): void {
   if (params.ios) {
     const {
       category,

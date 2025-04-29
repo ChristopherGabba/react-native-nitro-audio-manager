@@ -5,7 +5,7 @@ import {
   AudioSessionConfiguration,
   AudioSessionMode,
   configureAudio,
-  getAudioSessionStatus,
+  getAudioStatus,
 } from 'react-native-audio-manager';
 
 export type TestResult = { testId: number; passResult: boolean };
@@ -29,7 +29,7 @@ export async function runIOSCategoryTests(
           ...test,
         },
       });
-      const status = getAudioSessionStatus();
+      const status = getAudioStatus();
 
       if (Platform.OS === 'ios' && status && 'category' in status) {
         const categoriesMatched = status.category === test.category;
