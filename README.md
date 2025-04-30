@@ -1,6 +1,6 @@
 ![React Native Audio Manager](./assets/decal.png)
 
-# react-native-audio-manager
+# react-native-nitro-audio-manager
 
 A React Native library powered by [NitroModules](https://reactnative.dev/docs/native-modules-nitro) that gives access to [`AVAudioSession`](https://developer.apple.com/documentation/avfaudio/avaudiosession) on iOS and [`AudioManager`](https://developer.android.com/reference/android/media/AudioManager) on Android. This library is designed to give more granular control of audio sessions than what is typically needed in packages like:
 
@@ -27,13 +27,13 @@ A React Native library powered by [NitroModules](https://reactnative.dev/docs/na
 Using npm:
 
 ```sh
-npm install @christophergabba/react-native-audio-manager react-native-nitro-modules
+npm install react-native-nitro-audio-manager react-native-nitro-modules
 ```
 
 Using yarn:
 
 ```sh
-yarn add @christophergabba/react-native-audio-manager react-native-nitro-modules
+yarn add react-native-nitro-audio-manager react-native-nitro-modules
 ```
 
 # Documentation
