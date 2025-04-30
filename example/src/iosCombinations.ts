@@ -6,7 +6,7 @@ import {
   AudioSessionMode,
   configureAudio,
   getAudioStatus,
-} from 'react-native-audio-manager';
+} from 'react-native-nitro-audio-manager';
 
 export type TestResult = { testId: number; passResult: boolean };
 export type TestConfig = { testId: number; shouldPass: boolean };

@@ -1,4 +1,4 @@
-![React Native Audio Manager](./assets/decal.png)
+![React Native Audio Manager](./banner.jpg)
 
 # react-native-nitro-audio-manager
 
@@ -72,7 +72,7 @@ Returns a promise with the current system volume:
 
 #### Example
 ```ts
-    import { getSystemVolume } from 'react-native-audio-manager';
+    import { getSystemVolume } from 'react-native-nitro-audio-manager';
 
     const volume = await getSystemVolume()
     console.log(volume) // ex. 1.0
@@ -88,7 +88,7 @@ Sets the system between 0 and 1.
 #### Example
 
 ```ts
-import { setSystemVolume } from 'react-native-audio-manager';
+import { setSystemVolume } from 'react-native-nitro-audio-manager';
 
 await setSystemVolume(0.5, { showUI: true })
 ```
@@ -102,7 +102,7 @@ A hook that gives live feedback of the volume (listens for volume changes).
 ```tsx
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useVolume } from 'react-native-audio-manager';
+import { useVolume } from 'react-native-nitro-audio-manager';
 
 export default function VolumeDisplay() {
 
@@ -144,7 +144,7 @@ Returns an unsubscribe function that removes the listener.
 
 ```tsx
 import { useEffect } from 'react'
-import { addListener } from 'react-native-audio-manager';
+import { addListener } from 'react-native-nitro-audio-manager';
 
 useEffect(() => {
 
@@ -183,7 +183,7 @@ Returns the current **output latency** in **seconds**.
 #### Example
 
 ```ts
-import { getOutputLatency } from 'react-native-audio-manager';
+import { getOutputLatency } from 'react-native-nitro-audio-manager';
 
 const latency = getOutputLatency();
 console.log(`Output Latency: ${latency * 1000} ms`);
@@ -201,7 +201,7 @@ Returns the current **input Latency** in **seconds**.
 #### Example
 
 ```ts
-import { getInputLatency } from 'react-native-audio-manager';
+import { getInputLatency } from 'react-native-nitro-audio-manager';
 
 const latency = getInputLatency();
 console.log(`Input Latency: ${latency * 1000} ms`);
@@ -217,7 +217,7 @@ Returns an array of the currently connected **input routes**.
 #### Example
 
 ```ts
-import { getCurrentInputRoutes } from 'react-native-audio-manager';
+import { getCurrentInputRoutes } from 'react-native-nitro-audio-manager';
 
 const inputs = getCurrentInputRoutes();
 console.log('Current Input Routes:', inputs);
@@ -233,7 +233,7 @@ Returns an array of the currently connected **output routes**.
 Example:
 
 ```ts
-import { getCurrentOutputRoutes } from 'react-native-audio-manager';
+import { getCurrentOutputRoutes } from 'react-native-nitro-audio-manager';
 
 const outputs = getCurrentOutputRoutes();
 console.log('Current Output Routes:', outputs);
@@ -254,7 +254,7 @@ Returns an array of **available input ports** that are compatible with the curre
 #### Example
 
 ```ts
-import { getCategoryCompatibleInputs } from 'react-native-audio-manager';
+import { getCategoryCompatibleInputs } from 'react-native-nitro-audio-manager';
 
 const inputs = getCategoryCompatibleInputs();
 if (inputs) {
@@ -286,7 +286,7 @@ Cancels the temporary forced routing to the speaker caused by `forceOutputToSpea
 #### Example
 
 ```ts
-import { cancelForcedOutputToSpeaker } from 'react-native-audio-manager';
+import { cancelForcedOutputToSpeaker } from 'react-native-nitro-audio-manager';
 
 cancelForcedOutputToSpeaker();
 ```
@@ -344,7 +344,7 @@ import {
     AudioContentTypes,
     AudioFocusGainTypes,
     AudioUsages
-} from 'react-native-audio-manager';
+} from 'react-native-nitro-audio-manager';
 
 await configureAudio({
   ios: {
@@ -381,7 +381,7 @@ Retrieves the current audio session or audio manager configuration, depending on
 
 ```ts
 import { Platform } from 'react-native'
-import { getAudioStatus, AudioSessionStatus } from 'react-native-audio-manager';
+import { getAudioStatus, AudioSessionStatus } from 'react-native-nitro-audio-manager';
 
 if(Platform.OS === "ios") {
     const status = getAudioStatus() as AudioSessionStatus;
@@ -452,7 +452,7 @@ type ActivationOptions = {
 #### Example
 
 ```ts
-import { activate } from 'react-native-audio-manager';
+import { activate } from 'react-native-nitro-audio-manager';
 
 await activate(); // activates both iOS and Android
 
@@ -496,7 +496,7 @@ type DeactivationOptions = {
 #### Example
 
 ```ts
-import { deactivate } from 'react-native-audio-manager';
+import { deactivate } from 'react-native-nitro-audio-manager';
 
 await deactivate(); // deactivates both iOS and Android
 

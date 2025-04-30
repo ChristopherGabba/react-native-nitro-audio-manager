@@ -31,7 +31,7 @@ import {
   AudioSessionMode,
   AudioSessionCategoryOptions,
   setSystemVolume,
-} from 'react-native-audio-manager';
+} from 'react-native-nitro-audio-manager';
 import { appendWithLimit } from './utils';
 import {
   iosTestCombinations,

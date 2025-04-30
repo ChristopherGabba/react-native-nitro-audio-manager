@@ -33,7 +33,7 @@
     "!**/.*"
   ],
   "scripts": {
-    "example": "yarn workspace react-native-audio-manager-example",
+    "example": "yarn workspace react-native-nitro-audio-manager-example",
     "example:ios": "bash -c 'yarn prepare && cd example && npx expo prebuild --clean && npx expo run:ios --device \"Christopher’s iPhone\"'",
     "example:android": "bash -c 'yarn prepare && cd example && npx expo prebuild --clean && npx expo run:android --device'",
     "test": "jest",
@@ -51,14 +51,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ChristopherGabba/react-native-audio-manager.git"
+    "url": "git+https://github.com/ChristopherGabba/react-native-nitro-audio-manager.git"
   },
   "author": "ChristopherGabba <chrisgabba2005@yahoo.com> (https://github.com/ChristopherGabba)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ChristopherGabba/react-native-audio-manager/issues"
+    "url": "https://github.com/ChristopherGabba/react-native-nitro-audio-manager/issues"
   },
-  "homepage": "https://github.com/ChristopherGabba/react-native-audio-manager#readme",
+  "homepage": "https://github.com/ChristopherGabba/react-native-nitro-audio-manager#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },

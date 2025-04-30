@@ -1,5 +1,5 @@
 import { Dropdown, MultiSelect } from 'react-native-element-dropdown';
-import { AudioSessionCategory } from 'react-native-audio-manager';
+import { AudioSessionCategory } from 'react-native-nitro-audio-manager';
 import React, { useState, useMemo } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 

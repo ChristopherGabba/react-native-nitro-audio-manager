@@ -2,7 +2,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "paths": {
-      "react-native-audio-manager": ["./src/index"]
+      "react-native-nitro-audio-manager": ["./src/index"]
     },
     "allowSyntheticDefaultImports": true,
     "allowUnreachableCode": false,

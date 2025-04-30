@@ -1598,9 +1598,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@christophergabba/react-native-audio-manager@workspace:.":
+"@christophergabba/react-native-nitro-audio-manager@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@christophergabba/react-native-audio-manager@workspace:."
+  resolution: "@christophergabba/react-native-nitro-audio-manager@workspace:."
   dependencies:
     "@commitlint/config-conventional": ^19.6.0
     "@eslint/compat": ^1.2.7
@@ -11591,9 +11591,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-audio-manager-example@workspace:example":
+"react-native-nitro-audio-manager-example@workspace:example":
   version: 0.0.0-use.local
-  resolution: "react-native-audio-manager-example@workspace:example"
+  resolution: "react-native-nitro-audio-manager-example@workspace:example"
   dependencies:
     "@babel/core": ^7.25.2
     "@babel/preset-env": ^7.25.3
