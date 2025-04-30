@@ -1,5 +1,5 @@
 {
-  "name": "@christophergabba/react-native-audio-manager",
+  "name": "react-native-nitro-audio-manager",
   "version": "0.1.0",
   "description": "A react native library that gives API access to AVAudioSession on iOS and AudioManager on Android.",
   "source": "./src/index.tsx",
