@@ -2,6 +2,8 @@
 
 # react-native-nitro-audio-manager
 
+> ⚠️ This package is currently in alpha and under active development. Please report any issues that you run across on either platform. 
+
 A React Native library powered by [NitroModules](https://reactnative.dev/docs/native-modules-nitro) that gives access to [`AVAudioSession`](https://developer.apple.com/documentation/avfaudio/avaudiosession) on iOS and [`AudioManager`](https://developer.android.com/reference/android/media/AudioManager) on Android. This library is designed to give more granular control of audio sessions than what is typically needed in packages like:
 
 - [expo-video](https://docs.expo.dev/versions/latest/sdk/video/)
