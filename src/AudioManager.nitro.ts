@@ -30,21 +30,20 @@ export interface AudioManager
     fallbackToAmbientCategoryAndLeaveActiveForVolumeListener: boolean,
     warningCallback: (warning: AudioSessionWarning) => void
   ): Promise<void>;
-  /**
-   * IOS ONLY
-   */
-
   isActive(): boolean;
-  forceOutputToSpeaker(
-    warningCallback: (warning: AudioSessionWarning) => void
-  ): void;
-  cancelForcedOutputToSpeaker(): void;
   addInterruptionListener(callback: (type: InterruptionEvent) => void): number;
   removeInterruptionListener(id: number): void;
   addRouteChangeListener(callback: (event: RouteChangeEvent) => void): number;
   removeRouteChangeListener(id: number): void;
   addVolumeListener(callback: (value: number) => void): number;
   removeVolumeListener(id: number): void;
+  /**
+   * IOS ONLY
+   */
+  forceOutputToSpeaker(
+    warningCallback: (warning: AudioSessionWarning) => void
+  ): void;
+  cancelForcedOutputToSpeaker(): void;
   getAudioSessionStatusIOS(): AudioSessionStatus | undefined;
   configureAudioSession(
     category: string,
