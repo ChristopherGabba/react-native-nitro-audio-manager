@@ -150,12 +150,12 @@ import { addListener } from 'react-native-nitro-audio-manager';
 
 useEffect(() => {
 
-    // Listen for audio interruptions   
+    // Listen for audio interruptions (incomming phone calls, category changes on ios, etc.)
     const removeInterruptionListener = addListener('audioInterruption', (event) => {
     console.log('Audio interruption event:', event);
     });
 
-    // Listen for route changes
+    // Listen for route changes (headphones connecting, etc.)
     const removeRouteChangeListener = addListener('routeChange', (event) => {
     console.log('Route changed:', event);
     });
@@ -295,7 +295,11 @@ cancelForcedOutputToSpeaker();
 
 ## AudioSession (IOS) / AudioFocus (Android) Management
 
-Because of the uniqueness required for each platform, a decision was made to allow flexibility with configuring, activating, and deactivating for each platform.
+On iOS, configuring audio sessions is done manually via configuring categories, modes, options, and preferences. 
+
+Newer android phones / later SDK versions (version 33+) handle Android focus automatically within the phone so applying some of these settings may not function on later systems.
+
+Because of the uniqueness required for each platform and the occasional need to just set one platform (the other may work naturally), a decision was made to allow flexibility with configuring, activating, and deactivating for each platform.
 
 ### `configureAudio(params): void`
 
@@ -305,7 +309,6 @@ Configures a very type-safe **platform-specific audio session**.
 - **Android:** Configures the AudioManager with the params provided.
 
 *NOTE:* If one is not provided, it ignores that platform.
-
 
 ---
 
@@ -377,7 +380,6 @@ Retrieves the current audio session or audio manager configuration, depending on
 
 - **iOS:** Returns an `AudioSessionStatus` object containing details like category, mode, options, and audio routing preferences.
 - **Android:** Returns an `AudioManagerStatus` object containing details like focus gain, usage, content type, and ringer mode.
-- **Other platforms:** Returns `undefined`.
 
 #### Example
 
@@ -420,7 +422,7 @@ if(Platform.OS === "ios") {
 | `prefersInterruptionOnRouteDisconnect`  | Whether an interruption should occur when audio route is disconnected. |
 | `isEchoCancelledInputEnabled`            | Whether echo-cancelled input is currently active. |
 | `isEchoCancelledInputAvailable`          | Whether echo-cancelled input is supported by the current input device. |
-| `prefersEchoCancelledInput`              | Whether echo-cancelled input is preferred when available. |
+| `prefersEchoCancelledInput`              | Whether echo-cancelled input is preferred when available. Can only be used with Category: 'PlayAndRecord' and Mode: 'Default' |
 
 
 ### `activate(options?): Promise<void>`
