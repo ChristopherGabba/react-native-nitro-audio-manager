@@ -14,7 +14,8 @@ export type TestConfig = { testId: number; shouldPass: boolean };
 type TestCombination = AudioSessionConfiguration<
   AudioSessionCategory,
   AudioSessionMode,
-  AudioSessionCategoryOptions
+  AudioSessionCategoryOptions,
+  boolean
 > &
   TestConfig;
 

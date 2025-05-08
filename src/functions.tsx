@@ -17,6 +17,7 @@ import {
   PortDescription,
   RouteChangeEvent,
   AudioSessionWarning,
+  EchoCancelledInputCompatibliteCategories,
 } from './types';
 import { Platform } from 'react-native';
 
@@ -227,7 +228,8 @@ export function configureAudio<
   T extends AudioSessionCategory,
   M extends AudioSessionCompatibleModes[T],
   N extends AudioSessionCompatibleCategoryOptions[T],
->(params: ConfigureAudioAndActivateParams<T, M, N>): void {
+  O extends EchoCancelledInputCompatibliteCategories[T],
+>(params: ConfigureAudioAndActivateParams<T, M, N, O>): void {
   if (params.ios) {
     const {
       category,

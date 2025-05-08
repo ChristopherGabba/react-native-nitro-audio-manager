@@ -434,6 +434,15 @@ export type AudioSessionCompatibleCategoryOptions = {
     | 'InterruptSpokenAudioAndMixWithOthers';
 };
 
+export type EchoCancelledInputCompatibliteCategories = {
+  Ambient: false;
+  SoloAmbient: false;
+  Playback: false;
+  Record: false;
+  MultiRoute: false;
+  PlayAndRecord: true;
+};
+
 export type AudioSessionStatus = {
   category: AudioSessionCategory;
   mode: AudioSessionMode;
@@ -602,6 +611,7 @@ export type AudioSessionConfiguration<
   T extends AudioSessionCategory,
   M extends AudioSessionCompatibleModes[T],
   N extends AudioSessionCompatibleCategoryOptions[T],
+  O extends EchoCancelledInputCompatibliteCategories[T],
 > = {
   category: T;
   mode?: M;
@@ -610,7 +620,7 @@ export type AudioSessionConfiguration<
   prefersNoInterruptionFromSystemAlerts?: boolean;
   prefersInterruptionOnRouteDisconnect?: boolean;
   allowHapticsAndSystemSoundsDuringRecording?: boolean;
-  prefersEchoCancelledInput?: boolean;
+  prefersEchoCancelledInput?: O;
 };
 
 /**
@@ -631,7 +641,8 @@ export type ConfigureAudioAndActivateParams<
   T extends AudioSessionCategory,
   M extends AudioSessionCompatibleModes[T],
   N extends AudioSessionCompatibleCategoryOptions[T],
+  O extends EchoCancelledInputCompatibliteCategories[T],
 > = {
-  ios?: AudioSessionConfiguration<T, M, N>;
+  ios?: AudioSessionConfiguration<T, M, N, O>;
   android?: AudioManagerConfiguration;
 };
