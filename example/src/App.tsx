@@ -25,12 +25,11 @@ import {
   addListener,
   useIsHeadphonesConnected,
   PortDescription,
-  // setSystemVolume,
+  setSystemVolume,
   configureAudio,
   AudioSessionCategory,
   AudioSessionMode,
   AudioSessionCategoryOptions,
-  setSystemVolume,
 } from 'react-native-nitro-audio-manager';
 import { appendWithLimit } from './utils';
 import {
@@ -42,8 +41,7 @@ import { IOSSessionPicker, IOSSessionPickerValue } from './IOSSessionPicker';
 // import Slider from '@react-native-community/slider';
 
 export default function App() {
-  // simple pieces of state
-
+  // MARK: State Variables
   const [volume, setVolume] = useState<number>(0);
   const [liveUpdateVolume, setLiveUpdateVolume] = useState<number>(0);
   const [outLatency, setOutLatency] = useState<number>(getOutputLatency());
@@ -79,7 +77,7 @@ export default function App() {
   const routesToString = (arr: PortDescription[]) =>
     arr.map((r) => `${r.portType}:${r.uid}`).join('\n') || 'none';
 
-  // attach a route‑change listener so we can update UI
+  // MARK: Listeners
   const routeChangeEventCounter = useRef(1);
   useEffect(() => {
     const unsub = addListener('routeChange', (evt) => {
@@ -122,7 +120,7 @@ export default function App() {
       ];
     });
   };
-
+  // MARK: UI
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.inner}>
@@ -136,22 +134,30 @@ export default function App() {
           Model: {Device.manufacturer}: {Device.modelName}
         </Text>
         <Text style={styles.monospaced}>Sys Version: {Device.osVersion}</Text>
+        <Text style={styles.testNote}>
+          For example: New Android SDKs handle audio session on their own, and
+          newer iPhones have an EchoCancelledInput available for use.
+        </Text>
         <Text style={styles.heading}>Volume</Text>
         <Text style={styles.testNote}>
-          Test #1: Raise volume up and down on side of phone and tap button to
-          check value.
+          Test #1: Raise volume up and down on side of phone and tap "Get System
+          Volume Manually" button to check value.
         </Text>
         <View style={styles.row}>
           <Button
             title="Get System Volume Manually"
             onPress={async () => {
               const value = await getSystemVolume();
-              console.log('Got volume', value);
               setVolume(value);
             }}
           />
           <Text style={styles.monospaced}>{volume.toFixed(2)}</Text>
         </View>
+        <Text style={styles.testNote}>
+          Test #2: Raise the volume above 0.5 and below 0.5 and tap the "Set
+          system volume to 0.5" button. On iOS, this should be exact, on Android
+          it maybe slightly off (0.53) due to required rounding internally.
+        </Text>
         <Button
           title="Set system volume to 0.5"
           onPress={async () => {
@@ -159,7 +165,7 @@ export default function App() {
           }}
         />
         <Text style={styles.testNote}>
-          Test #2: Raise volume up and down, this value should update
+          Test #3: Raise volume up and down, this value should update
           automatically.
         </Text>
         <Text style={styles.monospaced}>{liveUpdateVolume.toFixed(2)}</Text>
@@ -202,7 +208,7 @@ export default function App() {
         </View>
         <Text style={styles.heading}>Audio Inputs / Outputs</Text>
         <Text style={styles.testNote}>
-          Test #5: Connect headphones and tap "List Inputs" and "List Outputs".
+          Test #6: Connect headphones and tap "List Inputs" and "List Outputs".
           Should go up to 2.
         </Text>
         <Button
@@ -220,7 +226,7 @@ export default function App() {
         <Text style={styles.value}>{outRoutes.length} ports</Text>
         <Text style={styles.heading}>Headphones Connected & Events</Text>
         <Text style={styles.testNote}>
-          Test Method: Unplug / plug in headphones (wired, bluetooth, etc.)
+          Test #7: Unplug / plug in headphones (wired, bluetooth, etc.)
         </Text>
         {lastFiveRouteChangeEvents.map((event, index) => {
           return (
@@ -241,7 +247,8 @@ export default function App() {
         <Text style={styles.heading}>Audio Interruption Events</Text>
         <Text style={styles.testNote}>Requires active audio session</Text>
         <Text style={styles.testNote}>
-          Test Method: Receive incomming call?
+          Test #7: Activate audio session and call the phone. Tapping accept on
+          the call should show an interruption.
         </Text>
         {lastFiveInterruptionEvents.map((event, index) => {
           return (
@@ -251,6 +258,10 @@ export default function App() {
           );
         })}
         <Text style={styles.heading}>Speaker Routing</Text>
+        <Text style={styles.testNote}>
+          Test #8: TODO: Figure out a way to test this properly, perhaps need
+          some sort of audio player to the example app.
+        </Text>
         <View style={styles.row}>
           <Button title="Force to Speaker" onPress={forceOutputToSpeaker} />
           <Button title="Cancel Force" onPress={cancelForcedOutputToSpeaker} />
@@ -259,6 +270,9 @@ export default function App() {
         {Platform.OS === 'ios' && (
           <>
             <Text style={styles.heading}>Session Lifecycle</Text>
+            <Text style={styles.testNote}>
+              Test #9: Play backround music and adjust session parameters.
+            </Text>
             <IOSSessionPicker
               onChange={(sessionValue) => {
                 setSession(sessionValue);
