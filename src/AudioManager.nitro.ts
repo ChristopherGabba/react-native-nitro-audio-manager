@@ -1,4 +1,5 @@
 import type { HybridObject } from 'react-native-nitro-modules';
+
 import type {
   AudioManagerStatus,
   AudioSessionStatus,
@@ -11,7 +12,7 @@ import type {
 export interface AudioManager
   extends HybridObject<{ ios: 'swift'; android: 'kotlin' }> {
   /**
-   * BOTH PLATFORMS
+   * MARK: Both Platforms
    */
   getOutputLatency(): number;
   getInputLatency(): number;
@@ -38,7 +39,7 @@ export interface AudioManager
   addVolumeListener(callback: (value: number) => void): number;
   removeVolumeListener(id: number): void;
   /**
-   * IOS ONLY
+   * MARK: IOS Only
    */
   forceOutputToSpeaker(
     warningCallback: (warning: AudioSessionWarning) => void
@@ -57,7 +58,7 @@ export interface AudioManager
     warningCallback: (warning: AudioSessionWarning) => void
   ): void;
   /**
-   * Android Only
+   * MARK: Android Only
    */
   getAudioManagerStatusAndroid(): AudioManagerStatus | undefined;
   configureAudioManager(

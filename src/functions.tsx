@@ -19,6 +19,7 @@ import {
   AudioSessionWarning,
   EchoCancelledInputCompatibliteCategories,
 } from './types';
+
 import { Platform } from 'react-native';
 
 export const AudioManagerHybridObject =

@@ -50,9 +50,15 @@ export function useVolume(): number {
   const [volume, setVolume] = useState<number>(0);
 
   useEffect(() => {
+    /**
+     * Kick off initial volume fetch
+     */
     getSystemVolume().then((initialVolume) => {
       setVolume(initialVolume);
     });
+    /**
+     * Apply listener
+     */
     const unsubscribe = addListener('volume', (value) => {
       setVolume(value);
     });

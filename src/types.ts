@@ -1,3 +1,5 @@
+// MARK: Common Types
+
 /**
  * Input ports for receiving audio from various sources.
  */
@@ -119,6 +121,112 @@ export type PortDescription = {
   isDataSourceSupported?: boolean;
   selectedDataSourceId?: string | null;
 };
+
+export interface AudioSessionWarning {
+  name: string;
+  message: string;
+}
+
+// Error type (matches AudioSessionError in Swift)
+export interface AudioSessionError extends Error {
+  name: string;
+  message: string;
+}
+
+export type PlatformOptions = 'ios' | 'android' | 'both';
+
+export type DeactivationOptions = {
+  /**
+   * Which platform(s) to deactivate on.
+   * - `ios`: only call the iOS activate API
+   * - `android`: only call the Android activate API
+   * - `both` (default): call both
+   */
+  platform?: PlatformOptions;
+  /**
+   * If by chance you are reliant (and using) the volume listener from `addListener('volume', ()=>{})`, and you call
+   * `deactivate`, your volume listener won't work anymore. This is because in order to actively track volume you need an active
+   * audio session. Setting this to true will skip the deactivation of the session, but then fallback to `Ambient` category
+   * @platform: `iOS`
+   * @default false
+   *
+   */
+  fallbackToAmbientCategoryAndLeaveActiveForVolumeListener?: boolean;
+  /**
+   * Restores the previous AVAudioSession when this one ends. For example, if you are listening to music in the backgorund
+   * and this audio session starts, it will pause the music. When you call `deactivate` it will play the music again.
+   * @platform: `iOS`
+   * @default true
+   */
+  restorePreviousSessionOnDeactivation?: boolean;
+};
+
+export type ActivationOptions = {
+  /**
+   * Which platform(s) to activate on.
+   * - `ios`: only call the iOS activate API
+   * - `android`: only call the Android activate API
+   * - `both` (default): call both
+   */
+  platform?: PlatformOptions;
+};
+
+export type RouteChangeReason =
+  | 'Unknown'
+  | 'NewDeviceAvailable'
+  | 'OldDeviceUnavailable'
+  | 'CategoryChange'
+  | 'Override'
+  | 'WakeFromSleep'
+  | 'NoSuitableRouteForCategory'
+  | 'RouteConfigurationChange';
+
+export interface RouteChangeEvent {
+  prevRoute: PortDescription[];
+  currentRoute: PortDescription[];
+  reason: RouteChangeReason;
+}
+
+export type InterruptionType = 'began' | 'ended';
+
+export type InterruptionReason =
+  | 'Default'
+  | 'BuiltInMicMuted'
+  | 'RouteDisconnected'
+  | 'AppWasSuspended'; // Deprecated but still kind of valid
+
+export interface InterruptionEvent {
+  type: InterruptionType;
+  reason: InterruptionReason;
+}
+
+export type ListenerEvent = {
+  audioInterruption: InterruptionEvent;
+  routeChange: RouteChangeEvent;
+  volume: number;
+};
+
+export type ListenerType = keyof ListenerEvent;
+
+export type HeadphonesConnectedResult = {
+  wireless: boolean;
+  wired: boolean;
+};
+
+/**
+ * Convenient union of both iOS + Android configs.
+ */
+export type ConfigureAudioAndActivateParams<
+  T extends AudioSessionCategory,
+  M extends AudioSessionCompatibleModes[T],
+  N extends AudioSessionCompatibleCategoryOptions[T],
+  O extends EchoCancelledInputCompatibliteCategories[T],
+> = {
+  ios?: AudioSessionConfiguration<T, M, N, O>;
+  android?: AudioManagerConfiguration;
+};
+
+// MARK: IOS Types
 
 export const AudioSessionCategory = {
   /**
@@ -290,17 +398,6 @@ export const AudioSessionRouteSharingPolicy = {
   Independent: 'Independent',
 } as const;
 
-export interface AudioSessionWarning {
-  name: string;
-  message: string;
-}
-
-// Error type (matches AudioSessionError in Swift)
-export interface AudioSessionError extends Error {
-  name: string;
-  message: string;
-}
-
 export type AudioSessionRouteSharingPolicy =
   (typeof AudioSessionRouteSharingPolicy)[keyof typeof AudioSessionRouteSharingPolicy];
 
@@ -457,85 +554,26 @@ export type AudioSessionStatus = {
   prefersEchoCancelledInput: boolean;
 };
 
-export type PlatformOptions = 'ios' | 'android' | 'both';
-
-export type DeactivationOptions = {
-  /**
-   * Which platform(s) to deactivate on.
-   * - `ios`: only call the iOS activate API
-   * - `android`: only call the Android activate API
-   * - `both` (default): call both
-   */
-  platform?: PlatformOptions;
-  /**
-   * If by chance you are reliant (and using) the volume listener from `addListener('volume', ()=>{})`, and you call
-   * `deactivate`, your volume listener won't work anymore. This is because in order to actively track volume you need an active
-   * audio session. Setting this to true will skip the deactivation of the session, but then fallback to `Ambient` category
-   * @platform: `iOS`
-   * @default false
-   *
-   */
-  fallbackToAmbientCategoryAndLeaveActiveForVolumeListener?: boolean;
-  /**
-   * Restores the previous AVAudioSession when this one ends. For example, if you are listening to music in the backgorund
-   * and this audio session starts, it will pause the music. When you call `deactivate` it will play the music again.
-   * @platform: `iOS`
-   * @default true
-   */
-  restorePreviousSessionOnDeactivation?: boolean;
+/**
+ * Exactly the parameters your existing configureAudioSession() expects.
+ */
+export type AudioSessionConfiguration<
+  T extends AudioSessionCategory,
+  M extends AudioSessionCompatibleModes[T],
+  N extends AudioSessionCompatibleCategoryOptions[T],
+  O extends EchoCancelledInputCompatibliteCategories[T],
+> = {
+  category: T;
+  mode?: M;
+  policy?: AudioSessionRouteSharingPolicy;
+  categoryOptions?: N[];
+  prefersNoInterruptionFromSystemAlerts?: boolean;
+  prefersInterruptionOnRouteDisconnect?: boolean;
+  allowHapticsAndSystemSoundsDuringRecording?: boolean;
+  prefersEchoCancelledInput?: O;
 };
 
-export type ActivationOptions = {
-  /**
-   * Which platform(s) to activate on.
-   * - `ios`: only call the iOS activate API
-   * - `android`: only call the Android activate API
-   * - `both` (default): call both
-   */
-  platform?: PlatformOptions;
-};
-
-export type RouteChangeReason =
-  | 'Unknown'
-  | 'NewDeviceAvailable'
-  | 'OldDeviceUnavailable'
-  | 'CategoryChange'
-  | 'Override'
-  | 'WakeFromSleep'
-  | 'NoSuitableRouteForCategory'
-  | 'RouteConfigurationChange';
-
-export interface RouteChangeEvent {
-  prevRoute: PortDescription[];
-  currentRoute: PortDescription[];
-  reason: RouteChangeReason;
-}
-
-export type InterruptionType = 'began' | 'ended';
-
-export type InterruptionReason =
-  | 'Default'
-  | 'BuiltInMicMuted'
-  | 'RouteDisconnected'
-  | 'AppWasSuspended'; // Deprecated but still kind of valid
-
-export interface InterruptionEvent {
-  type: InterruptionType;
-  reason: InterruptionReason;
-}
-
-export type ListenerEvent = {
-  audioInterruption: InterruptionEvent;
-  routeChange: RouteChangeEvent;
-  volume: number;
-};
-
-export type ListenerType = keyof ListenerEvent;
-
-export type HeadphonesConnectedResult = {
-  wireless: boolean;
-  wired: boolean;
-};
+// MARK: Android Types
 
 export const AudioModes = {
   Normal: 'Normal',
@@ -605,25 +643,6 @@ export interface AudioManagerStatus {
 }
 
 /**
- * Exactly the parameters your existing configureAudioSession() expects.
- */
-export type AudioSessionConfiguration<
-  T extends AudioSessionCategory,
-  M extends AudioSessionCompatibleModes[T],
-  N extends AudioSessionCompatibleCategoryOptions[T],
-  O extends EchoCancelledInputCompatibliteCategories[T],
-> = {
-  category: T;
-  mode?: M;
-  policy?: AudioSessionRouteSharingPolicy;
-  categoryOptions?: N[];
-  prefersNoInterruptionFromSystemAlerts?: boolean;
-  prefersInterruptionOnRouteDisconnect?: boolean;
-  allowHapticsAndSystemSoundsDuringRecording?: boolean;
-  prefersEchoCancelledInput?: O;
-};
-
-/**
  * Exactly the parameters your Android configureAudioManager() expects.
  */
 export interface AudioManagerConfiguration {
@@ -633,16 +652,3 @@ export interface AudioManagerConfiguration {
   willPauseWhenDucked: boolean;
   acceptsDelayedFocusGain: boolean;
 }
-
-/**
- * Convenient union of both iOS + Android configs.
- */
-export type ConfigureAudioAndActivateParams<
-  T extends AudioSessionCategory,
-  M extends AudioSessionCompatibleModes[T],
-  N extends AudioSessionCompatibleCategoryOptions[T],
-  O extends EchoCancelledInputCompatibliteCategories[T],
-> = {
-  ios?: AudioSessionConfiguration<T, M, N, O>;
-  android?: AudioManagerConfiguration;
-};
