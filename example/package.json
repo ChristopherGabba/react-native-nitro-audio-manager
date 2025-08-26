@@ -18,7 +18,7 @@
     "react": "19.0.0",
     "react-native": "0.79.5",
     "react-native-element-dropdown": "^2.12.4",
-    "react-native-nitro-modules": "^0.28.0"
+    "react-native-nitro-modules": "^0.28.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
