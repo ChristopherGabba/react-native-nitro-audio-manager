@@ -24,10 +24,8 @@
       "appleTeamId": "32U9AXHQSK"
     },
     "android": {
-      "package": "audiomanager.example"
-    },
-    "plugins": [
-      "expo-build-properties"
-    ]
+      "package": "audiomanager.example",
+      "edgeToEdgeEnabled": true
+    }
   }
 }

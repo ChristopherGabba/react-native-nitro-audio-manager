@@ -148,9 +148,3 @@ dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   implementation project(":react-native-nitro-modules")
 }
-
-afterEvaluate {
-    tasks.named("generateCodegenSchemaFromJavaScript") {
-        dependsOn(":expo-dev-menu:copyAssets")
-    }
-}
