@@ -26,6 +26,11 @@
     "android": {
       "package": "audiomanager.example",
       "edgeToEdgeEnabled": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "41785d78-a848-436b-a0bf-1e3a9b634179"
+      }
     }
   }
 }
