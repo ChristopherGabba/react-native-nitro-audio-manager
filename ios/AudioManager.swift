@@ -571,7 +571,7 @@ class AudioManager: HybridAudioManagerSpec {
             message: "AllowBluetooth is not supported for category \(categoryName)"
           )
         }
-        options.insert(.allowBluetooth)
+        options.insert(.allowBluetoothHFP)
       case "AllowBluetoothA2DP":
         if category == .playAndRecord {
           options.insert(.allowBluetoothA2DP)
@@ -948,8 +948,8 @@ class AudioManager: HybridAudioManagerSpec {
     if options.contains(.duckOthers) {
       result.append(.duckothers)
     }
-    if options.contains(.allowBluetooth) {
-      result.append(.allowbluetooth)
+    if options.contains(.allowBluetoothHFP) {
+      result.append(.allowbluetoothHFP)
     }
     if options.contains(.allowBluetoothA2DP) {
       result.append(.allowbluetootha2dp)
