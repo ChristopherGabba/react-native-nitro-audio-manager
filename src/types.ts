@@ -285,7 +285,7 @@ export const AudioSessionCategory = {
    *
    * **Compatible Cateogory Options**:
    *
-   * MixWithOthers, DuckOthers, InterruptSpokenAudioAndMixWithOthers, AllowBluetooth, AllowBluetoothA2DP (set by default), AllowAirPlay, DefaultToSpeaker, OverrideMutedMicrophoneInterruption
+   * MixWithOthers, DuckOthers, InterruptSpokenAudioAndMixWithOthers, AllowBluetoothHFP, AllowBluetoothA2DP (set by default), AllowAirPlay, DefaultToSpeaker, OverrideMutedMicrophoneInterruption
    *
    */
   PlayAndRecord: 'PlayAndRecord',
@@ -331,14 +331,14 @@ export const AudioSessionMode = {
   Default: 'Default',
   /**
    * Use this mode for Voice over IP (VoIP) apps that use the playAndRecord category. When you set this mode, the session optimizes the device's tonal equalization for voice and reduces the set of allowable audio routes to only those appropriate for voice chat.
-   * Using this mode has the side effect of enabling the allowBluetooth category option.
+   * Using this mode has the side effect of enabling the allowBluetoothHFP category option.
    * For apps that use voice or video chat, also use the Voice-Processing I/O audio unit. The Voice-Processing I/O unit provides several features for VoIP apps, including automatic gain correction, adjustment of voice processing, and muting. See Voice-Processing I/O Unit for more information.
    * If an app uses the Voice-Processing I/O audio unit and hasn't set its mode to one of the chat modes (voice, video, or game), the session sets the voiceChat mode implicitly. On the other hand, if the app had previously set its category to playAndRecord and its mode to videoChat or gameChat, instantiating the Voice-Processing I/O audio unit doesn't cause the mode to change.
    */
   VoiceChat: 'VoiceChat',
   /**
    * Use this mode for video chat apps that use the playAndRecord or record categories. When you set this mode, the audio session optimizes the device's tonal equalization for voice. It also reduces the set of allowable audio routes to only those appropriate for video chat.
-   * Using this mode has the side effect of enabling the allowBluetooth category option.
+   * Using this mode has the side effect of enabling the allowBluetoothHFP category option.
    * For apps that use voice or video chat, also use the Voice-Processing I/O audio unit. The Voice-Processing I/O unit provides several features for VoIP apps, including automatic gain correction, adjustment of voice processing, and muting. See Voice-Processing I/O Unit for more information.
    * If an app uses the Voice-Processing I/O audio unit and hasn't set its mode to one of the chat modes (voice, video, or game), the session sets the voiceChat mode implicitly. On the other hand, if the app had previously set its category to playAndRecord and its mode to videoChat or gameChat, instantiating the Voice-Processing I/O audio unit doesn't cause the mode to change.
    */
@@ -439,7 +439,7 @@ export const AudioSessionCategoryOptions = {
    *
    * If an application uses the `setPreferredInput(_:)` method to select a Bluetooth HFP input, the output automatically changes to the corresponding Bluetooth HFP output. Likewise, selecting a Bluetooth HFP output using an `MPVolumeView` object's route picker automatically changes the input to the corresponding Bluetooth HFP input. Therefore, both audio input and output are routed to the Bluetooth HFP device even though you only selected the input or output.
    */
-  AllowBluetooth: 'AllowBluetooth',
+  AllowBluetoothHFP: 'AllowBluetoothHFP',
   /**
    * An option that determines whether you can stream audio from this session to Bluetooth devices that support the Advanced Audio Distribution Profile (A2DP).
    *
@@ -515,12 +515,12 @@ export type AudioSessionCompatibleCategoryOptions = {
     | 'MixWithOthers'
     | 'DuckOthers'
     | 'InterruptSpokenAudioAndMixWithOthers';
-  Record: 'AllowBluetooth';
+  Record: 'AllowBluetoothHFP';
   PlayAndRecord:
     | 'MixWithOthers'
     | 'DuckOthers'
     | 'InterruptSpokenAudioAndMixWithOthers'
-    | 'AllowBluetooth'
+    | 'AllowBluetoothHFP'
     | 'AllowBluetoothA2DP'
     | 'AllowAirPlay'
     | 'DefaultToSpeaker'

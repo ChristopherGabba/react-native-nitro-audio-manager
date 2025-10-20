@@ -564,7 +564,7 @@ class AudioManager: HybridAudioManagerSpec {
           )
         }
         options.insert(.mixWithOthers)
-      case "AllowBluetooth":
+      case "AllowBluetoothHFP":
         guard category == .playAndRecord || category == .record else {
           throw AudioSessionError.error(
             name: "UNSUPPORTED_CATEGORY_OPTION",
@@ -949,7 +949,7 @@ class AudioManager: HybridAudioManagerSpec {
       result.append(.duckothers)
     }
     if options.contains(.allowBluetoothHFP) {
-      result.append(.allowbluetoothHFP)
+      result.append(.allowbluetoothhfp)
     }
     if options.contains(.allowBluetoothA2DP) {
       result.append(.allowbluetootha2dp)

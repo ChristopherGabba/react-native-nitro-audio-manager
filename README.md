@@ -357,7 +357,7 @@ await configureAudio({
     mode: AudioSessionMode.VideoRecording,
     categoryOptions: [
         AudioSessionCategoryOptions.MixWithOthers, 
-        AudioSessionCategoryOptions.AllowBluetooth
+        AudioSessionCategoryOptions.AllowBluetoothHFP
     ],
     prefersNoInterruptionFromSystemAlerts: true,
     prefersInterruptionOnRouteDisconnect: true,
@@ -414,7 +414,7 @@ if(Platform.OS === "ios") {
 |:----------------------------------------|:------------|
 | `category`                              | Active AVAudioSession category (e.g., `playback`, `playAndRecord`). |
 | `mode`                                  | Active AVAudioSession mode (e.g., `default`, `videoRecording`). |
-| `categoryOptions`                       | Array of enabled category options (e.g., `allowBluetooth`, `defaultToSpeaker`). |
+| `categoryOptions`                       | Array of enabled category options (e.g., `allowBluetoothHFP`, `defaultToSpeaker`). |
 | `routeSharingPolicy`                    | Current route sharing policy (e.g., `default`, `longFormAudio`). |
 | `isOutputtingAudioElsewhere`             | Whether audio output is being redirected to another app or device. |
 | `allowHapticsAndSystemSoundsDuringRecording` | Whether haptics and system sounds are allowed while recording. |

@@ -99,21 +99,21 @@ export const iosTestCombinations: TestCombination[] = [
     mode: AudioSessionMode.Default,
     categoryOptions: [AudioSessionCategoryOptions.AllowBluetoothA2DP],
   },
-  // Test 6: Valid PlayAndRecord with AllowBluetooth
+  // Test 6: Valid PlayAndRecord with AllowBluetoothHFP
   {
     testId: 6,
     shouldPass: true,
     category: AudioSessionCategory.PlayAndRecord,
     mode: AudioSessionMode.VoiceChat,
-    categoryOptions: [AudioSessionCategoryOptions.AllowBluetooth],
+    categoryOptions: [AudioSessionCategoryOptions.AllowBluetoothHFP],
   },
-  // Test 7: Invalid Playback with AllowBluetooth
+  // Test 7: Invalid Playback with AllowBluetoothHFP
   {
     testId: 7,
     shouldPass: false,
     category: AudioSessionCategory.Playback,
     mode: AudioSessionMode.MoviePlayback,
-    categoryOptions: [AudioSessionCategoryOptions.AllowBluetooth],
+    categoryOptions: [AudioSessionCategoryOptions.AllowBluetoothHFP],
   },
   // Test 8: Valid MultiRoute with DuckOthers
   {
@@ -185,7 +185,7 @@ export const iosTestCombinations: TestCombination[] = [
     mode: AudioSessionMode.Default,
     categoryOptions: [
       AudioSessionCategoryOptions.MixWithOthers,
-      AudioSessionCategoryOptions.AllowBluetooth,
+      AudioSessionCategoryOptions.AllowBluetoothHFP,
       AudioSessionCategoryOptions.DefaultToSpeaker,
     ],
   },
@@ -208,13 +208,13 @@ export const iosTestCombinations: TestCombination[] = [
     mode: AudioSessionMode.Default,
     categoryOptions: [AudioSessionCategoryOptions.DuckOthers],
   },
-  // Test 18: Valid Record with AllowBluetooth
+  // Test 18: Valid Record with AllowBluetoothHFP
   {
     testId: 18,
     shouldPass: true,
     category: AudioSessionCategory.Record,
     mode: AudioSessionMode.Measurement,
-    categoryOptions: [AudioSessionCategoryOptions.AllowBluetooth],
+    categoryOptions: [AudioSessionCategoryOptions.AllowBluetoothHFP],
   },
   // Test 19: Valid MultiRoute with MixWithOthers
   {
@@ -248,13 +248,13 @@ export const iosTestCombinations: TestCombination[] = [
     mode: AudioSessionMode.Default,
     categoryOptions: [AudioSessionCategoryOptions.AllowBluetoothA2DP],
   },
-  // Test 23: Invalid MultiRoute with AllowBluetooth
+  // Test 23: Invalid MultiRoute with AllowBluetoothHFP
   {
     testId: 23,
     shouldPass: false,
     category: AudioSessionCategory.MultiRoute,
     mode: AudioSessionMode.Default,
-    categoryOptions: [AudioSessionCategoryOptions.AllowBluetooth],
+    categoryOptions: [AudioSessionCategoryOptions.AllowBluetoothHFP],
   },
   // Test 24: Valid PlayAndRecord with VoiceChat and MixWithOthers
   {
