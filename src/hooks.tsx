@@ -32,7 +32,7 @@ export function useIsHeadphonesConnected(): HeadphonesConnectedResult {
     });
 
     return () => {
-      unsubscribe;
+      unsubscribe();
     };
   }, []);
 

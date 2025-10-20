@@ -297,6 +297,11 @@ export default function App() {
                     await deactivate({
                       restorePreviousSessionOnDeactivation: true,
                     });
+                    configureAudio({
+                      ios: {
+                        category: AudioSessionCategory.Ambient,
+                      },
+                    });
                   }
 
                   setIsActivated(v);
