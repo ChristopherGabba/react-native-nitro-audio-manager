@@ -42,8 +42,9 @@ import { IOSSessionPicker, IOSSessionPickerValue } from './IOSSessionPicker';
 
 export default function App() {
   // MARK: State Variables
-  const [volume, setVolume] = useState<number>(0);
-  const [liveUpdateVolume, setLiveUpdateVolume] = useState<number>(0);
+  const [volume, setVolume] = useState<number>(getSystemVolume());
+  const [liveUpdateVolume, setLiveUpdateVolume] =
+    useState<number>(getSystemVolume());
   const [outLatency, setOutLatency] = useState<number>(getOutputLatency());
   const [inLatency, setInLatency] = useState<number>(getInputLatency());
   const [inRoutes, setInRoutes] = useState<PortDescription[]>([]);
@@ -101,10 +102,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    getSystemVolume().then((value) => {
-      setVolume(value);
-      setLiveUpdateVolume(value);
-    });
     const unsub = addListener('volume', (value) => {
       setLiveUpdateVolume(value);
     });

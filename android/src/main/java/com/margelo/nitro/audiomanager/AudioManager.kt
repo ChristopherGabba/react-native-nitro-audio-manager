@@ -186,12 +186,10 @@ class AudioManager : HybridAudioManagerSpec() {
     }
   }
 
-  override fun getSystemVolume(): Promise<Double> {
-    return Promise.async {
-        val current = am.getStreamVolume(SysAudioManager.STREAM_MUSIC)
-        val max     = am.getStreamMaxVolume(SysAudioManager.STREAM_MUSIC)
-        if (max > 0) current.toDouble() / max.toDouble() else 0.0
-    }
+  override fun getSystemVolume(): Double {
+      val current = am.getStreamVolume(SysAudioManager.STREAM_MUSIC)
+      val max = am.getStreamMaxVolume(SysAudioManager.STREAM_MUSIC)
+      return if (max > 0) current.toDouble() / max.toDouble() else 0.0
   }
 
   override fun setSystemVolume(value: Double, showUI: Boolean): Promise<Unit> = Promise.async {

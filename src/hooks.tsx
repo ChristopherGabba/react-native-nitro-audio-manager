@@ -47,15 +47,9 @@ export function useIsHeadphonesConnected(): HeadphonesConnectedResult {
  * <Text>Volume: {(volume * 100).toFixed(0)}%</Text>
  */
 export function useVolume(): number {
-  const [volume, setVolume] = useState<number>(0);
+  const [volume, setVolume] = useState<number>(getSystemVolume());
 
   useEffect(() => {
-    /**
-     * Kick off initial volume fetch
-     */
-    getSystemVolume().then((initialVolume) => {
-      setVolume(initialVolume);
-    });
     /**
      * Apply listener
      */

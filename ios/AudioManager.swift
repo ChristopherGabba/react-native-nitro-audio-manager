@@ -280,16 +280,13 @@ class AudioManager: HybridAudioManagerSpec {
     }
   }
 
-  public func getSystemVolume() throws -> Promise<Double> {
-    return Promise.async {
-      if let volume = await self.hiddenVolumeView?.getVolume() {
-        return volume
-      } else {
-        // Fallback to AVAudioSession if HiddenVolumeView fails
-        return Double(self.audioSession.outputVolume)
-      }
+  public func getSystemVolume() throws -> Double {
+    if let volume = self.hiddenVolumeView?.getVolume() {
+      return volume
+    } else {
+      // Fallback to AVAudioSession if HiddenVolumeView fails
+      return Double(self.audioSession.outputVolume)
     }
-
   }
 
   public func setSystemVolume(value: Double, showUI: Bool) throws -> Promise<Void> {

@@ -43,7 +43,7 @@ yarn add react-native-nitro-audio-manager react-native-nitro-modules
 ## Table of Contents
 
 - [Volume Control](#volume-control)
-    - [`getSystemVolume()`](#getsystemvolumepromisenumber)
+    - [`getSystemVolume()`](#getsystemvolume-number)
     - [`setSystemVolume()`](#setsystemvolumevalue-options-promisevoid)
     - [`useVolume()`](#usevolumenumber)
 - [Listeners](#listeners)
@@ -65,9 +65,9 @@ yarn add react-native-nitro-audio-manager react-native-nitro-modules
 
 ## Volume Control
 
-### `getSystemVolume(): Promise<number>`
+### `getSystemVolume(): number`
 
-Returns a promise with the current system volume:
+Returns the current system volume:
 
 - **iOS:** A single number in the range `[0–1]`. 
 - **Android:** The music stream volume in the range `[0–1]` (Android has mutliple streams).
@@ -76,7 +76,7 @@ Returns a promise with the current system volume:
 ```ts
     import { getSystemVolume } from 'react-native-nitro-audio-manager';
 
-    const volume = await getSystemVolume()
+    const volume = getSystemVolume()
     console.log(volume) // ex. 1.0
 ```
 

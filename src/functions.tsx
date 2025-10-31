@@ -38,7 +38,7 @@ function processWarning(warning: AudioSessionWarning) {
  * - **iOS:** a single number in the range [0–1].
  * - **Android:** the music stream volume in the range [0–1]
  */
-export function getSystemVolume(): Promise<number> {
+export function getSystemVolume(): number {
   return AudioManagerHybridObject.getSystemVolume();
 }
 /**
