@@ -1,6 +1,6 @@
 {
   "name": "react-native-nitro-audio-manager",
-  "version": "0.1.8",
+  "version": "0.2.0",
   "description": "A react native library that gives API access to AVAudioSession on iOS and AudioManager on Android.",
   "source": "./src/index.tsx",
   "main": "./lib/module/index.js",
