@@ -10,8 +10,8 @@
     "build:ios": "react-native build-ios --scheme AudioManagerExample --mode Debug --extra-params \"-sdk iphonesimulator CC=clang CPLUSPLUS=clang++ LD=clang LDPLUSPLUS=clang++ GCC_OPTIMIZATION_LEVEL=0 GCC_PRECOMPILE_PREFIX_HEADER=YES ASSETCATALOG_COMPILER_OPTIMIZATION=time DEBUG_INFORMATION_FORMAT=dwarf COMPILER_INDEX_STORE_ENABLE=NO\""
   },
   "dependencies": {
-    "expo": "54.0.21",
-    "expo-dev-client": "~6.0.16",
+    "expo": "54.0.23",
+    "expo-dev-client": "~6.0.17",
     "expo-device": "~8.0.9",
     "react": "19.1.0",
     "react-native": "0.81.5",
