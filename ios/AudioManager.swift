@@ -653,10 +653,17 @@ class AudioManager: HybridAudioManagerSpec {
         }
       }
     } catch {
-      throw AudioSessionError.error(
-        name: "INVALID_CONFIGURATION",
-        message: "Failed to set category: \(error.localizedDescription)"
-      )
+      if(error.localizedDescription.contains("The operation couldn’t be completed")) {
+        throw AudioSessionError.error(
+          name: "MICROPHONE_IN_USE",
+          message: "Failed to configure audio session: \(error.localizedDescription)"
+        )
+      } else {
+        throw AudioSessionError.error(
+          name: "INVALID_CONFIGURATION",
+          message: "Failed to set category: \(error.localizedDescription)"
+        )
+      }
     }
 
     do {
