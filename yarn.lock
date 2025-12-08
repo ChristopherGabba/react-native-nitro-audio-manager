@@ -11028,18 +11028,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nitrogen@npm:^0.31.5":
-  version: 0.31.5
-  resolution: "nitrogen@npm:0.31.5"
+"nitrogen@npm:^0.31.10":
+  version: 0.31.10
+  resolution: "nitrogen@npm:0.31.10"
   dependencies:
     chalk: ^5.3.0
-    react-native-nitro-modules: ^0.31.5
+    react-native-nitro-modules: ^0.31.10
     ts-morph: ^27.0.0
     yargs: ^18.0.0
     zod: ^4.0.5
   bin:
     nitrogen: lib/index.js
-  checksum: defb6948f1f5727ae4e6412870226fb52a2b6ebe96fe5501a4093c5c513d55c465ae20f066c914d8540125818d55ab03b156b4e085213667724425b730c11ab3
+  checksum: 6bba165b334172d6ea060affefc14aded38294cd9ef23f58a3aff9fc89f41d7b62e6ae9897bec5d8ce181bb9656d387c67f2649b91ad133041db0aa04826ff71
   languageName: node
   linkType: hard
 
@@ -12258,7 +12258,7 @@ __metadata:
     react-native-builder-bob: ^0.40.12
     react-native-element-dropdown: ^2.12.4
     react-native-monorepo-config: ^0.1.9
-    react-native-nitro-modules: ^0.31.5
+    react-native-nitro-modules: ^0.31.10
   languageName: unknown
   linkType: soft
 
@@ -12281,29 +12281,29 @@ __metadata:
     eslint-config-prettier: ^10.1.1
     eslint-plugin-prettier: ^5.2.3
     jest: ^29.7.0
-    nitrogen: ^0.31.5
+    nitrogen: ^0.31.10
     prettier: ^3.0.3
     react: 19.1.0
     react-native: 0.81.5
     react-native-builder-bob: ^0.40.6
-    react-native-nitro-modules: ^0.31.5
+    react-native-nitro-modules: ^0.31.10
     release-it: ^17.10.0
     turbo: ^1.10.7
     typescript: ^5.2.2
   peerDependencies:
     react: "*"
     react-native: "*"
-    react-native-nitro-modules: ^0.31.5
+    react-native-nitro-modules: ^0.31.10
   languageName: unknown
   linkType: soft
 
-"react-native-nitro-modules@npm:^0.31.5":
-  version: 0.31.5
-  resolution: "react-native-nitro-modules@npm:0.31.5"
+"react-native-nitro-modules@npm:^0.31.10":
+  version: 0.31.10
+  resolution: "react-native-nitro-modules@npm:0.31.10"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 957c1c264d5a7bb791ca7aa0c97b577c0ba60bb5765f4bf6fdf64a6f414d33702d94909823b33a4fc1b01f3d51175669c779212e645c21ccd204197ea66ed701
+  checksum: 1c8d2f12ff29b6733c784c5fd0dedcbec4ceec9f82eb49f49e7734f31b9367346938010dcacf69bf695a352e36fec5aa23fd57b8091f6acd78c3d9a61e14ea7f
   languageName: node
   linkType: hard
 
