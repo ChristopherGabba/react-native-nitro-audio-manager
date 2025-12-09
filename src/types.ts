@@ -119,7 +119,7 @@ export type PortDescription = {
   uid: string;
   channels?: number[];
   isDataSourceSupported?: boolean;
-  selectedDataSourceId?: string | null;
+  selectedDataSourceId?: string;
 };
 
 export interface AudioSessionWarning {
