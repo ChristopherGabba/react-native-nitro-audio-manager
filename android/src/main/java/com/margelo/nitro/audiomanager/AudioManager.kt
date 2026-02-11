@@ -305,6 +305,10 @@ class AudioManager : HybridAudioManagerSpec() {
 
       AudioDeviceInfo.TYPE_BLUETOOTH_A2DP          -> PortType.BLUETOOTHA2DP
       AudioDeviceInfo.TYPE_BLUETOOTH_SCO           -> PortType.BLUETOOTHHFP
+      AudioDeviceInfo.TYPE_HEARING_AID,
+      AudioDeviceInfo.TYPE_BLE_HEADSET,
+      AudioDeviceInfo.TYPE_BLE_SPEAKER,
+      AudioDeviceInfo.TYPE_BLE_BROADCAST           -> PortType.BLUETOOTHLE
 
       AudioDeviceInfo.TYPE_HDMI                    -> PortType.HDMI
       AudioDeviceInfo.TYPE_USB_DEVICE,
@@ -325,6 +329,42 @@ class AudioManager : HybridAudioManagerSpec() {
       isDataSourceSupported = true,
       selectedDataSourceId = null
     )
+  }
+
+  private fun isBluetoothOutput(device: AudioDeviceInfo): Boolean {
+    return when (device.type) {
+      AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
+      AudioDeviceInfo.TYPE_BLUETOOTH_SCO,
+      AudioDeviceInfo.TYPE_HEARING_AID,
+      AudioDeviceInfo.TYPE_BLE_HEADSET,
+      AudioDeviceInfo.TYPE_BLE_SPEAKER,
+      AudioDeviceInfo.TYPE_BLE_BROADCAST -> true
+      else -> false
+    }
+  }
+
+  private fun isWiredOutput(device: AudioDeviceInfo): Boolean {
+    return when (device.type) {
+      AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
+      AudioDeviceInfo.TYPE_WIRED_HEADSET,
+      AudioDeviceInfo.TYPE_USB_HEADSET,
+      AudioDeviceInfo.TYPE_USB_DEVICE -> true
+      else -> false
+    }
+  }
+
+  private fun getRoutedOutputFromAttributes(): AudioDeviceInfo? {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+      return null
+    }
+
+    val attributes = AudioAttributes.Builder()
+      .setUsage(usage)
+      .setContentType(contentType)
+      .build()
+
+    return am.getAudioDevicesForAttributes(attributes)
+      .firstOrNull { it.isSink }
   }
 
   override fun getCategoryCompatibleInputs(): Array<PortDescription> {
@@ -363,7 +403,16 @@ class AudioManager : HybridAudioManagerSpec() {
   override fun getCurrentOutputRoutes(): Array<PortDescription>  {
     val outputs = am.getDevices(SysAudioManager.GET_DEVICES_OUTPUTS)
 
-    val active: AudioDeviceInfo? = when {
+    val activeFromAttributes = getRoutedOutputFromAttributes()
+
+    val activeFromCommunicationDevice: AudioDeviceInfo? =
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        am.communicationDevice?.takeIf { it.isSink }
+      } else {
+        null
+      }
+
+    val activeFromLegacyFlags: AudioDeviceInfo? = when {
       @Suppress("DEPRECATION")
       am.isBluetoothA2dpOn -> outputs.firstOrNull {
         it.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP
@@ -385,6 +434,18 @@ class AudioManager : HybridAudioManagerSpec() {
         it.type == AudioDeviceInfo.TYPE_TELEPHONY
       }
     }
+
+    val active = activeFromAttributes
+      ?: activeFromCommunicationDevice
+      ?: activeFromLegacyFlags
+      ?: outputs.firstOrNull { isBluetoothOutput(it) }
+      ?: outputs.firstOrNull { isWiredOutput(it) }
+      ?: outputs.firstOrNull { it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER }
+      ?: outputs.firstOrNull {
+        it.type == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE ||
+        it.type == AudioDeviceInfo.TYPE_TELEPHONY
+      }
+      ?: outputs.firstOrNull()
 
     return active
       ?.let { arrayOf(mapToPort(it)) }
