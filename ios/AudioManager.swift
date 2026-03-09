@@ -177,7 +177,7 @@ class AudioManager: HybridAudioManagerSpec {
 
     let interruptionChangeInfo = InterruptionEvent(
       type: type,
-      reason: reason,
+      reason: reason
     )
 
     interruptionListeners.forEach { $0.callback(interruptionChangeInfo) }
@@ -204,7 +204,7 @@ class AudioManager: HybridAudioManagerSpec {
     let routeChangeInfo = RouteChangeEvent(
       prevRoute: previousRouteDescription,
       currentRoute: currentRouteDescription,
-      reason: reason,
+      reason: reason
     )
 
     routeChangeListeners.forEach { $0.callback(routeChangeInfo) }
@@ -568,7 +568,7 @@ class AudioManager: HybridAudioManagerSpec {
             message: "AllowBluetooth is not supported for category \(categoryName)"
           )
         }
-        options.insert(.allowBluetoothHFP)
+        options.insert(.allowBluetooth)
       case "AllowBluetoothA2DP":
         if category == .playAndRecord {
           options.insert(.allowBluetoothA2DP)
@@ -952,7 +952,7 @@ class AudioManager: HybridAudioManagerSpec {
     if options.contains(.duckOthers) {
       result.append(.duckothers)
     }
-    if options.contains(.allowBluetoothHFP) {
+    if options.contains(.allowBluetooth) {
       result.append(.allowbluetoothhfp)
     }
     if options.contains(.allowBluetoothA2DP) {
